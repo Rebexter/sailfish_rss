@@ -2,8 +2,8 @@
 
 A native [FreshRSS](https://freshrss.org/) client for Sailfish OS.
 
-**Status:** early development. The FreshRSS API client is done and tested;
-the app does not use it yet. See [docs/PLAN.md](docs/PLAN.md) for the roadmap.
+**Status:** early development. The FreshRSS API client, local database and
+sync are done and tested; the app does not use them yet. See [docs/PLAN.md](docs/PLAN.md) for the roadmap.
 
 ## Requirements
 

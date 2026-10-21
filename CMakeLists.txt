@@ -4,7 +4,7 @@ project(harbour-sailrss CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package (Qt5 COMPONENTS Core Network Qml Gui Quick LinguistTools REQUIRED)
+find_package (Qt5 COMPONENTS Core Network Sql Qml Gui Quick LinguistTools REQUIRED)
 
 include(FindPkgConfig)
 pkg_search_module(SAILFISH sailfishapp REQUIRED)
@@ -19,9 +19,13 @@ add_library(sailrss-core STATIC
     src/api/greaderparser.cpp
     src/api/greaderparser.h
     src/api/greadertypes.h
+    src/storage/database.cpp
+    src/storage/database.h
+    src/sync/syncmanager.cpp
+    src/sync/syncmanager.h
 )
 target_include_directories(sailrss-core PUBLIC src)
-target_link_libraries(sailrss-core PUBLIC Qt5::Core Qt5::Network)
+target_link_libraries(sailrss-core PUBLIC Qt5::Core Qt5::Network Qt5::Sql)
 
 add_executable(harbour-sailrss src/harbour-sailrss.cpp)
 target_compile_definitions(harbour-sailrss PRIVATE

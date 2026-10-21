@@ -60,11 +60,21 @@ Each phase ends with something that can be checked on the phone.
   remove it in Phase 4, when real credential storage replaces it.
 - Done when: tests pass against the local FreshRSS.
 
-### 2. Storage and sync
-- SQLite tables: feeds, categories, items, pending actions.
-- Incremental sync: push pending actions, pull new items, reconcile read and
-  starred state.
-- Retention setting (for example, keep the last 30 days).
+### 2. Storage and sync ✅
+- SQLite tables: feeds (with their category), items, pending actions, sync
+  state.
+- User actions (read, starred, mark all as read) change the database and
+  queue a pending action in one transaction. One action per item and field;
+  the newest replaces the older, and actions are sent in order.
+- Sync: send pending actions, replace the feed list, fetch articles that
+  arrived since the last sync (FreshRSS's `ot` filter goes by arrival time,
+  so late-published articles are included), then set read and starred state
+  from the server's complete unread and starred ID lists. The `ot` filter
+  does not report state changes, so this reconciliation is needed.
+- History window (default 600 days): the first sync fetches that far back;
+  starred articles are always fetched, however old. Read, unstarred
+  articles older than the window are deleted.
+- Not stored yet: user labels and enclosures (podcasts, images).
 - Done when: a sync fills the database and toggling read state survives being
   offline.
 

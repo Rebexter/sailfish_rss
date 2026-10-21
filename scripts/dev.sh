@@ -4,7 +4,7 @@
 # Usage: scripts/dev.sh <command>
 #   build      build the RPM for the target (runs the unit tests too)
 #   test       rerun the unit tests on the last build
-#   live-test  run the API tests against a FreshRSS server (see below)
+#   live-test  run the API and sync tests against a FreshRSS server (see below)
 #   check      run the Jolla Store (Harbour) validator on the built RPM
 #   deploy     install the built RPM on the device
 #   undeploy   remove the app from the device
@@ -75,7 +75,7 @@ cmd_live_test() {
             IFS= read -r SAILRSS_URL; IFS= read -r SAILRSS_USER
             IFS= read -r SAILRSS_PASSWORD; IFS= read -r SAILRSS_LIVE_WRITE
             export SAILRSS_URL SAILRSS_USER SAILRSS_PASSWORD SAILRSS_LIVE_WRITE
-            exec tests/tst_greaderlive'
+            tests/tst_greaderlive && tests/tst_synclive'
 }
 cmd_check() { sfdk check -s harbour "$(latest_rpm)"; }
 cmd_deploy() {
