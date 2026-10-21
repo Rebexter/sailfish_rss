@@ -47,6 +47,8 @@ public:
     void classBegin() override;
     void componentComplete() override;
 
+    // Updates the counts in place if the streams are the same, so the
+    // scroll position is kept; rebuilds the list otherwise.
     Q_INVOKABLE void reload();
 
 signals:

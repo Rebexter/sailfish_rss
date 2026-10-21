@@ -11,7 +11,8 @@ class AppController;
 
 // Articles of one stream, newest arrival first. Articles marked read stay
 // in an unread-only list until the next reload, so they do not disappear
-// while the user is reading.
+// while the user is reading. After a sync the list is updated in place, so
+// the scroll position is kept.
 class ArticleListModel : public QAbstractListModel, public QQmlParserStatus
 {
     Q_OBJECT
@@ -47,7 +48,11 @@ public:
     void classBegin() override;
     void componentComplete() override;
 
+    // Rebuilds the list from scratch.
     Q_INVOKABLE void reload();
+    // Merges in changes from the database: inserts new articles, updates
+    // read and starred state, removes deleted ones.
+    Q_INVOKABLE void refresh();
     // Marks everything in the stream read up to the newest listed article,
     // so articles that arrive meanwhile stay unread.
     Q_INVOKABLE void markAllRead();

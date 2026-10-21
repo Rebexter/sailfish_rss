@@ -106,7 +106,19 @@ void StreamListModel::reload()
         }
     }
 
-    beginResetModel();
-    m_rows = rows;
-    endResetModel();
+    bool sameStreams = rows.size() == m_rows.size();
+    for (int i = 0; sameStreams && i < rows.size(); ++i)
+        sameStreams = rows.at(i).streamId == m_rows.at(i).streamId && rows.at(i).title == m_rows.at(i).title;
+    if (!sameStreams) {
+        beginResetModel();
+        m_rows = rows;
+        endResetModel();
+        return;
+    }
+    for (int i = 0; i < rows.size(); ++i) {
+        if (rows.at(i).count != m_rows.at(i).count || rows.at(i).iconUrl != m_rows.at(i).iconUrl) {
+            m_rows[i] = rows.at(i);
+            emit dataChanged(index(i), index(i), {CountRole, IconUrlRole});
+        }
+    }
 }
