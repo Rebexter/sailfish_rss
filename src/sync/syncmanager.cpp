@@ -58,9 +58,20 @@ SyncManager::Stats SyncManager::lastStats() const
 
 void SyncManager::sync()
 {
+    start(false);
+}
+
+void SyncManager::sendPendingActions()
+{
+    start(true);
+}
+
+void SyncManager::start(bool sendOnly)
+{
     if (m_syncing)
         return;
     m_syncing = true;
+    m_sendOnly = sendOnly;
     m_errorKind = ErrorKind::None;
     m_errorMessage.clear();
     m_stats = Stats();
@@ -99,7 +110,10 @@ void SyncManager::sendPending()
 void SyncManager::sendNextBatch()
 {
     if (m_batches.isEmpty()) {
-        fetchSubscriptions();
+        if (m_sendOnly)
+            finish(ErrorKind::None, QString());
+        else
+            fetchSubscriptions();
         return;
     }
 

@@ -80,10 +80,41 @@ public:
 
     // --- Queries
 
+    // A folder or feed with its number of unread items.
+    struct StreamSummary {
+        QString id;
+        QString title;
+        QString iconUrl;
+        int unread = 0;
+    };
+
+    // An item without its content, for lists.
+    struct ItemSummary {
+        QString id;
+        QString feedTitle;
+        QString title;
+        QString author;
+        QDateTime published;
+        qint64 crawledUsec = 0;
+        bool read = false;
+        bool starred = false;
+    };
+
+    // Folders sorted by name, and the feeds of one folder.
+    QList<StreamSummary> folders();
+    QList<StreamSummary> feeds(const QString &folderId);
+    // Items of a stream, newest arrival first.
+    QList<ItemSummary> items(const QString &streamId, bool unreadOnly);
+
     std::optional<StoredItem> item(const QString &id);
+    QString feedTitle(const QString &feedId);
     int itemCount();
     int feedCount();
+    int starredCount();
     int unreadCount(const QString &streamId);
+
+    // Deletes everything, e.g. when logging out.
+    bool clear();
 
 private:
     bool exec(const QString &sql);

@@ -257,6 +257,62 @@ private slots:
         QCOMPARE(m_db->unreadCount("bogus"), -1);
     }
 
+    void listsFoldersAndFeeds()
+    {
+        fill();
+        QVERIFY(m_db->replaceSubscriptions({feed("feed/1", "News"), feed("feed/2", "Tech"), feed("feed/3", "news2"),
+                                            feed("feed/4", "Tech")}));
+        QVERIFY(m_db->setRead("200", true));
+
+        const auto folders = m_db->folders();
+        QCOMPARE(folders.size(), 3);  // sorted case-insensitively
+        QCOMPARE(folders.at(0).title, QStringLiteral("News"));
+        QCOMPARE(folders.at(0).id, QStringLiteral("user/-/label/News"));
+        QCOMPARE(folders.at(0).unread, 3);
+        QCOMPARE(folders.at(1).title, QStringLiteral("news2"));
+        QCOMPARE(folders.at(1).unread, 0);  // a feed without items
+        QCOMPARE(folders.at(2).title, QStringLiteral("Tech"));
+        QCOMPARE(folders.at(2).unread, 1);
+
+        const auto feeds = m_db->feeds("user/-/label/Tech");
+        QCOMPARE(feeds.size(), 2);
+        QCOMPARE(feeds.at(0).id, QStringLiteral("feed/2"));
+        QCOMPARE(feeds.at(0).title, QStringLiteral("feed/2 title"));
+        QCOMPARE(feeds.at(0).unread, 1);
+        QCOMPARE(feeds.at(1).unread, 0);
+        QCOMPARE(m_db->feedTitle("feed/4"), QStringLiteral("feed/4 title"));
+    }
+
+    void listsItemsNewestFirst()
+    {
+        fill();
+        const auto all = m_db->items("feed/1", false);
+        QCOMPARE(all.size(), 4);
+        QCOMPARE(all.at(0).id, QStringLiteral("103"));
+        QCOMPARE(all.at(0).feedTitle, QStringLiteral("feed/1 title"));
+        QVERIFY(all.at(0).starred);
+        QCOMPARE(all.at(3).id, QStringLiteral("100"));
+
+        const auto unread = m_db->items("feed/1", true);
+        QCOMPARE(unread.size(), 3);  // 102 is read
+        QCOMPARE(m_db->items("user/-/label/Tech", false).size(), 2);
+        QCOMPARE(m_db->items(StreamId::ReadingList, true).size(), 5);
+        QCOMPARE(m_db->items(StreamId::Starred, false).size(), 1);
+        QCOMPARE(m_db->starredCount(), 1);
+    }
+
+    void clearRemovesEverything()
+    {
+        fill();
+        QVERIFY(m_db->setRead("100", true));
+        QVERIFY(m_db->setSyncState("lastSyncTime", "1"));
+        QVERIFY(m_db->clear());
+        QCOMPARE(m_db->itemCount(), 0);
+        QCOMPARE(m_db->feedCount(), 0);
+        QVERIFY(m_db->pendingActions().isEmpty());
+        QVERIFY(m_db->syncState("lastSyncTime").isEmpty());
+    }
+
     void missingItemIds()
     {
         fill();

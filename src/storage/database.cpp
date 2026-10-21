@@ -465,6 +465,104 @@ std::optional<Database::StoredItem> Database::item(const QString &id)
     return item;
 }
 
+QList<Database::StreamSummary> Database::folders()
+{
+    QList<StreamSummary> folders;
+    QSqlQuery query(m_db);
+    if (!query.exec(QStringLiteral(
+            "SELECT f.category_id, f.category_label, COALESCE(SUM(i.read = 0), 0) FROM feeds f "
+            "LEFT JOIN items i ON i.feed_id = f.id "
+            "WHERE f.category_id != '' GROUP BY f.category_id ORDER BY f.category_label COLLATE NOCASE"))) {
+        m_error = query.lastError().text();
+        return folders;
+    }
+    while (query.next())
+        folders.append({query.value(0).toString(), query.value(1).toString(), QString(), query.value(2).toInt()});
+    return folders;
+}
+
+QList<Database::StreamSummary> Database::feeds(const QString &folderId)
+{
+    QList<StreamSummary> feeds;
+    QSqlQuery query(m_db);
+    query.prepare(QStringLiteral(
+        "SELECT f.id, f.title, f.icon_url, COALESCE(SUM(i.read = 0), 0) FROM feeds f "
+        "LEFT JOIN items i ON i.feed_id = f.id "
+        "WHERE f.category_id = ? GROUP BY f.id ORDER BY f.title COLLATE NOCASE"));
+    query.addBindValue(folderId);
+    if (!query.exec()) {
+        m_error = query.lastError().text();
+        return feeds;
+    }
+    while (query.next()) {
+        feeds.append({query.value(0).toString(), query.value(1).toString(), query.value(2).toString(),
+                      query.value(3).toInt()});
+    }
+    return feeds;
+}
+
+QList<Database::ItemSummary> Database::items(const QString &streamId, bool unreadOnly)
+{
+    QList<ItemSummary> items;
+    const std::optional<QString> condition = streamCondition(streamId);
+    if (!condition) {
+        m_error = QStringLiteral("Unsupported stream %1").arg(streamId);
+        return items;
+    }
+    QSqlQuery query(m_db);
+    query.prepare(QStringLiteral("SELECT i.id, f.title, i.title, i.author, i.published, i.crawled_usec, i.read, i.starred "
+                                 "FROM items i LEFT JOIN feeds f ON f.id = i.feed_id "
+                                 "WHERE (%1) %2 ORDER BY i.crawled_usec DESC")
+                      .arg(*condition, unreadOnly ? QStringLiteral("AND i.read = 0") : QString()));
+    if (condition->contains(QLatin1String(":stream")))
+        query.bindValue(QStringLiteral(":stream"), streamId);
+    if (!query.exec()) {
+        m_error = query.lastError().text();
+        return items;
+    }
+    while (query.next()) {
+        ItemSummary item;
+        item.id = query.value(0).toString();
+        item.feedTitle = query.value(1).toString();
+        item.title = query.value(2).toString();
+        item.author = query.value(3).toString();
+        if (!query.value(4).isNull())
+            item.published = QDateTime::fromMSecsSinceEpoch(query.value(4).toLongLong() * 1000, Qt::UTC);
+        item.crawledUsec = query.value(5).toLongLong();
+        item.read = query.value(6).toBool();
+        item.starred = query.value(7).toBool();
+        items.append(item);
+    }
+    return items;
+}
+
+QString Database::feedTitle(const QString &feedId)
+{
+    QSqlQuery query(m_db);
+    query.prepare(QStringLiteral("SELECT title FROM feeds WHERE id = ?"));
+    query.addBindValue(feedId);
+    if (!query.exec()) {
+        m_error = query.lastError().text();
+        return QString();
+    }
+    return query.next() ? query.value(0).toString() : QString();
+}
+
+int Database::starredCount()
+{
+    return count(QStringLiteral("SELECT COUNT(*) FROM items WHERE starred = 1"));
+}
+
+bool Database::clear()
+{
+    Transaction transaction(m_db);
+    for (const char *table : {"feeds", "items", "pending_actions", "sync_state"}) {
+        if (!exec(QStringLiteral("DELETE FROM %1").arg(QLatin1String(table))))
+            return false;
+    }
+    return transaction.commit();
+}
+
 int Database::itemCount()
 {
     return count(QStringLiteral("SELECT COUNT(*) FROM items"));

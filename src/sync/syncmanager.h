@@ -42,8 +42,10 @@ public:
     QString lastErrorMessage() const;
     Stats lastStats() const;
 
-    // Does nothing if a sync is already running.
+    // Both do nothing if a sync is already running.
     Q_INVOKABLE void sync();
+    // Only step 1, to send user actions soon after they happen.
+    Q_INVOKABLE void sendPendingActions();
 
 signals:
     void syncingChanged();
@@ -57,6 +59,7 @@ private:
         QList<qint64> seqs;
     };
 
+    void start(bool sendOnly);
     void sendPending();
     void sendNextBatch();
     void fetchSubscriptions();
@@ -80,6 +83,7 @@ private:
     Stats m_stats;
 
     // State of the running sync
+    bool m_sendOnly = false;
     QList<Batch> m_batches;
     qint64 m_since = 0;
     qint64 m_serverTime = 0;
