@@ -8,4 +8,4 @@ Name=SailRSS
 [X-Sailjail]
 OrganizationName=io.github.rebexter
 ApplicationName=harbour-sailrss
-Permissions=Internet
+Permissions=Internet;Secrets

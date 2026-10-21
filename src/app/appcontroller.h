@@ -2,6 +2,7 @@
 #define SAILRSS_APPCONTROLLER_H
 
 #include "api/greaderclient.h"
+#include "app/keychain.h"
 #include "storage/database.h"
 #include "sync/syncmanager.h"
 
@@ -73,8 +74,10 @@ private:
     void setSyncError(const QString &message);
     void scheduleSend();
     void emitArticleChanged(const QString &itemId);
+    void forgetSession();
 
     std::unique_ptr<QSettings> m_settings;
+    Keychain m_keychain;
     Database m_database;
     GReader::Client m_client;
     SyncManager m_sync;

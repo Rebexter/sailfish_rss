@@ -8,6 +8,7 @@ find_package (Qt5 COMPONENTS Core Network Sql Qml Gui Quick LinguistTools REQUIR
 
 include(FindPkgConfig)
 pkg_search_module(SAILFISH sailfishapp REQUIRED)
+pkg_search_module(SECRETS sailfishsecrets REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -34,6 +35,8 @@ add_executable(harbour-sailrss
     src/app/appcontroller.h
     src/app/articlelistmodel.cpp
     src/app/articlelistmodel.h
+    src/app/keychain.cpp
+    src/app/keychain.h
     src/app/streamlistmodel.cpp
     src/app/streamlistmodel.h
     src/harbour-sailrss.cpp
@@ -44,12 +47,14 @@ target_compile_definitions(harbour-sailrss PRIVATE
 target_include_directories(harbour-sailrss PRIVATE
     $<BUILD_INTERFACE:
     ${SAILFISH_INCLUDE_DIRS}
+    ${SECRETS_INCLUDE_DIRS}
 >)
 target_link_libraries(harbour-sailrss
     sailrss-core
     Qt5::Qml
     Qt5::Quick
     ${SAILFISH_LDFLAGS}
+    ${SECRETS_LDFLAGS}
 )
 
 include(CTest)

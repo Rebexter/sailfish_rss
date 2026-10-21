@@ -10,9 +10,11 @@ namespace {
 const QString ServerKey = QStringLiteral("account/server");  // as the user entered it
 const QString ApiUrlKey = QStringLiteral("account/apiUrl");
 const QString UserKey = QStringLiteral("account/user");
-// TODO(phase 4): keep the session token in the keychain (Sailfish.Secrets)
-// instead of the settings file. The API password itself is never stored.
-const QString TokenKey = QStringLiteral("account/token");
+// Early development versions kept the session token here; it is moved to the
+// keychain on start.
+const QString LegacyTokenKey = QStringLiteral("account/token");
+// The session token lives in the keychain; the API password is never stored.
+const QString TokenSecret = QStringLiteral("sessionToken");
 const QString LastSyncKey = QStringLiteral("sync/lastSync");
 
 // Wait a moment after a user action, so several actions go in one request.
@@ -54,8 +56,26 @@ bool AppController::open()
         return false;
     }
 
+    QString token;
+    const QString legacyToken = m_settings->value(LegacyTokenKey).toString();
+    if (!legacyToken.isEmpty()) {
+        if (m_keychain.store(TokenSecret, legacyToken.toUtf8())) {
+            m_settings->remove(LegacyTokenKey);
+            m_settings->sync();
+        } else {
+            qWarning("Cannot move the session token to the keychain: %s", qPrintable(m_keychain.lastError()));
+        }
+        token = legacyToken;
+    }
+
     const QString apiUrl = m_settings->value(ApiUrlKey).toString();
-    const QString token = m_settings->value(TokenKey).toString();
+    if (!apiUrl.isEmpty() && token.isEmpty()) {
+        const std::optional<QByteArray> stored = m_keychain.load(TokenSecret);
+        if (stored)
+            token = QString::fromUtf8(*stored);
+        else
+            qInfo("No session token in the keychain: %s", qPrintable(m_keychain.lastError()));
+    }
     if (!apiUrl.isEmpty() && !token.isEmpty()) {
         m_client.setServerUrl(QUrl(apiUrl));
         m_client.setAuthToken(token);
@@ -133,6 +153,12 @@ void AppController::login(const QString &serverUrl, const QString &user, const Q
             return;
         }
 
+        if (!m_keychain.store(TokenSecret, m_client.authToken().toUtf8())) {
+            m_client.setAuthToken(QString());
+            emit loginFinished(false, tr("Cannot save the session in the keychain: %1").arg(m_keychain.lastError()));
+            return;
+        }
+
         // A different account or server starts with an empty database.
         const QString apiUrl = m_client.apiUrl().toString();
         if (apiUrl != m_settings->value(ApiUrlKey).toString() || trimmedUser != m_settings->value(UserKey).toString()) {
@@ -145,7 +171,6 @@ void AppController::login(const QString &serverUrl, const QString &user, const Q
         m_settings->setValue(ServerKey, url.toString());
         m_settings->setValue(ApiUrlKey, apiUrl);
         m_settings->setValue(UserKey, trimmedUser);
-        m_settings->setValue(TokenKey, m_client.authToken());
         m_settings->sync();
 
         m_loggedIn = true;
@@ -160,11 +185,9 @@ void AppController::logout()
 {
     m_sendTimer.stop();
     m_database.clear();
-    m_settings->remove(TokenKey);
     m_settings->remove(LastSyncKey);
     m_settings->sync();
-    m_client.setAuthToken(QString());
-    m_loggedIn = false;
+    forgetSession();
     setSyncError(QString());
     emit accountChanged();
     emit lastSyncChanged();
@@ -208,8 +231,7 @@ void AppController::onSyncFinished(bool ok)
                 setSyncError(tr("Cannot reach the server"));
             break;
         case SyncManager::ErrorKind::Auth:
-            m_settings->remove(TokenKey);
-            m_loggedIn = false;
+            forgetSession();
             setSyncError(tr("The session is no longer valid, please log in again"));
             emit accountChanged();
             break;
@@ -299,6 +321,15 @@ void AppController::scheduleSend()
 {
     if (m_loggedIn)
         m_sendTimer.start();
+}
+
+// Keeps server and user for the login page, but not the token.
+void AppController::forgetSession()
+{
+    if (!m_keychain.remove(TokenSecret))
+        qInfo("Removing the session token: %s", qPrintable(m_keychain.lastError()));
+    m_client.setAuthToken(QString());
+    m_loggedIn = false;
 }
 
 void AppController::emitArticleChanged(const QString &itemId)
