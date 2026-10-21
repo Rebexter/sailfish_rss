@@ -42,14 +42,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show all articles</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show unread only</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Mark all as read</source>
         <translation type="unfinished"></translation>
     </message>
@@ -86,7 +78,43 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Pull down to show all articles</source>
+        <source>Show read articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pull down to show read articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unread articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show unread articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show all articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No read articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show newest first</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show oldest first</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -261,6 +289,38 @@
     </message>
     <message>
         <source>Every 5 minutes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Storage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keep read articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Counted from when an article arrived. Unread and starred articles are always kept.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1 day</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1 week</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1 month</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1 year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forever</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

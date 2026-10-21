@@ -68,9 +68,13 @@ Each phase ends with something that can be checked on the phone.
   so late-published articles are included), then set read and starred state
   from the server's complete unread and starred ID lists. The `ot` filter
   does not report state changes, so this reconciliation is needed.
-- History window (default 600 days): the first sync fetches that far back;
-  starred articles are always fetched, however old. Read, unstarred
-  articles older than the window are deleted.
+- History window (600 days): the first sync fetches that far back;
+  starred articles are always fetched, however old.
+- Read, unstarred articles are deleted after a time set in Settings → Storage
+  (1 day, 1 week, 1 month, 1 year or forever; default 1 month), counted from
+  when they were read (database schema 2 records this; articles read
+  elsewhere count from the sync that noticed it). Unread and starred
+  articles are never deleted.
 - Not stored yet: user labels and enclosures (podcasts, images).
 - Done when: a sync fills the database and toggling read state survives being
   offline.

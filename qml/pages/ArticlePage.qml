@@ -30,7 +30,8 @@ Page {
 
     SilicaFlickable {
         anchors.fill: parent
-        contentHeight: column.height + Theme.paddingLarge
+        // Room to scroll the last lines up to the middle of the screen
+        contentHeight: column.height + height / 2
 
         PullDownMenu {
             MenuItem {

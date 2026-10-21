@@ -48,6 +48,28 @@ Page {
             }
 
             SectionHeader {
+                text: qsTr("Storage")
+            }
+
+            ComboBox {
+                // Days, matching the menu entries; 0 is forever
+                readonly property var retentions: [1, 7, 30, 365, 0]
+
+                width: parent.width
+                label: qsTr("Keep read articles")
+                description: qsTr("Counted from when an article arrived. Unread and starred articles are always kept.")
+                currentIndex: Math.max(0, retentions.indexOf(app.readRetention))
+                menu: ContextMenu {
+                    MenuItem { text: qsTr("1 day") }
+                    MenuItem { text: qsTr("1 week") }
+                    MenuItem { text: qsTr("1 month") }
+                    MenuItem { text: qsTr("1 year") }
+                    MenuItem { text: qsTr("Forever") }
+                }
+                onCurrentIndexChanged: app.readRetention = retentions[currentIndex]
+            }
+
+            SectionHeader {
                 text: qsTr("Account")
             }
 

@@ -60,8 +60,9 @@ public:
     // complete lists, again except where actions are pending.
     bool reconcileStates(const QStringList &unreadIds, const QStringList &starredIds);
     QStringList missingItemIds(const QStringList &ids);
-    // Deletes read, unstarred items that arrived before the cutoff.
-    int deleteExpired(qint64 cutoffUsec);
+    // Deletes read, unstarred items that were read before the cutoff (Unix
+    // seconds). Returns the number deleted.
+    int deleteExpired(qint64 readBeforeSecs);
 
     QList<PendingAction> pendingActions();
     // Removes sent actions. An action replaced by a newer one in the
@@ -103,8 +104,14 @@ public:
     // Folders sorted by name, and the feeds of one folder.
     QList<StreamSummary> folders();
     QList<StreamSummary> feeds(const QString &folderId);
-    // Items of a stream, newest arrival first.
-    QList<ItemSummary> items(const QString &streamId, bool unreadOnly);
+    enum class ItemFilter {
+        All,
+        Unread,
+        Read,
+    };
+
+    // Items of a stream by arrival, newest or oldest first.
+    QList<ItemSummary> items(const QString &streamId, ItemFilter filter, bool oldestFirst = false);
 
     std::optional<StoredItem> item(const QString &id);
     QString feedTitle(const QString &feedId);
@@ -118,7 +125,7 @@ public:
 
 private:
     bool exec(const QString &sql);
-    bool createSchema();
+    bool upgrade(int fromVersion);
     bool queuePendingAction(PendingAction::Kind kind, const QString &target, qint64 value);
     bool setFlag(const QString &column, PendingAction::Kind kind, const QString &itemId, bool value);
     int count(const QString &sql);

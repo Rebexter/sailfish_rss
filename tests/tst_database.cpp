@@ -1,5 +1,6 @@
 #include "storage/database.h"
 
+#include <QFile>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QTemporaryDir>
@@ -44,6 +45,31 @@ private:
     std::unique_ptr<Database> m_db;
 
     QString path() const { return m_dir->path() + QStringLiteral("/sub/sailrss.sqlite"); }
+
+    static qint64 now() { return QDateTime::currentMSecsSinceEpoch() / 1000; }
+
+    // Runs SQL on the database file through a separate connection and
+    // returns the first value of the result, if any.
+    QVariant raw(const QString &sql)
+    {
+        QVariant result;
+        {
+            QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "raw");
+            db.setDatabaseName(path());
+            if (db.open()) {
+                QSqlQuery query(db);
+                if (!query.exec(sql))
+                    qWarning("raw SQL failed: %s", qPrintable(sql));
+                else if (query.next())
+                    result = query.value(0);
+            }
+            db.close();
+        }
+        QSqlDatabase::removeDatabase("raw");
+        return result;
+    }
+
+    QVariant readAt(qint64 id) { return raw(QStringLiteral("SELECT read_at FROM items WHERE id = %1").arg(id)); }
 
     bool read(qint64 id) { return m_db->item(QString::number(id))->read; }
     bool starred(qint64 id) { return m_db->item(QString::number(id))->starred; }
@@ -286,18 +312,27 @@ private slots:
     void listsItemsNewestFirst()
     {
         fill();
-        const auto all = m_db->items("feed/1", false);
+        using Filter = Database::ItemFilter;
+        const auto all = m_db->items("feed/1", Filter::All);
         QCOMPARE(all.size(), 4);
         QCOMPARE(all.at(0).id, QStringLiteral("103"));
         QCOMPARE(all.at(0).feedTitle, QStringLiteral("feed/1 title"));
         QVERIFY(all.at(0).starred);
         QCOMPARE(all.at(3).id, QStringLiteral("100"));
 
-        const auto unread = m_db->items("feed/1", true);
+        const auto unread = m_db->items("feed/1", Filter::Unread);
         QCOMPARE(unread.size(), 3);  // 102 is read
-        QCOMPARE(m_db->items("user/-/label/Tech", false).size(), 2);
-        QCOMPARE(m_db->items(StreamId::ReadingList, true).size(), 5);
-        QCOMPARE(m_db->items(StreamId::Starred, false).size(), 1);
+        const auto read = m_db->items("feed/1", Filter::Read);
+        QCOMPARE(read.size(), 1);
+        QCOMPARE(read.at(0).id, QStringLiteral("102"));
+        QCOMPARE(m_db->items("user/-/label/Tech", Filter::All).size(), 2);
+        QCOMPARE(m_db->items(StreamId::ReadingList, Filter::Unread).size(), 5);
+        QCOMPARE(m_db->items(StreamId::ReadingList, Filter::Read).size(), 1);
+        QCOMPARE(m_db->items(StreamId::Starred, Filter::All).size(), 1);
+
+        const auto oldest = m_db->items("feed/1", Filter::All, true);
+        QCOMPARE(oldest.first().id, QStringLiteral("100"));
+        QCOMPARE(oldest.last().id, QStringLiteral("103"));
         QCOMPARE(m_db->starredCount(), 1);
     }
 
@@ -319,20 +354,66 @@ private slots:
         QCOMPARE(m_db->missingItemIds({"100", "555", "201", "556"}), QStringList({"555", "556"}));
     }
 
-    void deleteExpiredKeepsWhatMatters()
+    void readTimeFollowsReadState()
+    {
+        fill();
+        QVERIFY(readAt(100).isNull());                     // unread
+        QVERIFY(qAbs(readAt(102).toLongLong() - now()) <= 5);  // inserted as read
+        QVERIFY(m_db->setRead("100", true));
+        QVERIFY(qAbs(readAt(100).toLongLong() - now()) <= 5);
+        QVERIFY(m_db->setRead("100", false));
+        QVERIFY(readAt(100).isNull());
+
+        // From the server, by sync or by mark all as read
+        QVERIFY(m_db->reconcileStates({"100", "102", "103", "200", "201"}, {}));
+        QVERIFY(!readAt(101).isNull());
+        QVERIFY(readAt(102).isNull());  // unread again
+        QVERIFY(m_db->markAllRead("feed/2", 201));
+        QVERIFY(!readAt(200).isNull());
+
+        // Staying read keeps the original time.
+        QVERIFY(raw("UPDATE items SET read_at = 1000 WHERE id = 101").isNull());
+        QVERIFY(m_db->upsertItems({item(101, "feed/1", true)}));
+        QCOMPARE(readAt(101).toLongLong(), Q_INT64_C(1000));
+    }
+
+    void deleteExpiredGoesByReadTime()
     {
         fill();
         QVERIFY(m_db->setRead("100", true));  // read, but not yet sent
         QVERIFY(m_db->reconcileStates({"100", "101"}, {"103"}));
         // Now: 100 read (pending), 101 unread, 102 read, 103 read+starred,
-        // 200 and 201 read. Everything but 201 is older than the cutoff.
-        QCOMPARE(m_db->deleteExpired(201), 2);  // 102 and 200
+        // 200 and 201 read. All but 201 were read long ago.
+        QVERIFY(raw("UPDATE items SET read_at = 1000 WHERE id != 201").isNull());
+        QCOMPARE(m_db->deleteExpired(now() - 3600), 2);  // 102 and 200
         QVERIFY(m_db->item("100").has_value());
         QVERIFY(m_db->item("101").has_value());
         QVERIFY(!m_db->item("102").has_value());
         QVERIFY(m_db->item("103").has_value());
         QVERIFY(!m_db->item("200").has_value());
-        QVERIFY(m_db->item("201").has_value());
+        QVERIFY(m_db->item("201").has_value());  // read recently
+    }
+
+    void upgradesVersion1()
+    {
+        m_db.reset();
+        QFile::remove(path());
+        // The version 1 tables used here, with one read and one unread item
+        raw("CREATE TABLE items (id INTEGER PRIMARY KEY, feed_id TEXT NOT NULL, title TEXT, author TEXT, url TEXT, "
+            "content TEXT, published INTEGER, crawled_usec INTEGER NOT NULL, read INTEGER NOT NULL DEFAULT 0, "
+            "starred INTEGER NOT NULL DEFAULT 0)");
+        raw("INSERT INTO items (id, feed_id, crawled_usec, read) VALUES (1, 'feed/1', 1, 1), (2, 'feed/1', 2, 0)");
+        raw("CREATE TABLE pending_actions (seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, "
+            "target TEXT NOT NULL, value INTEGER NOT NULL, UNIQUE (kind, target))");
+        raw("PRAGMA user_version = 1");
+
+        m_db.reset(new Database);
+        QVERIFY2(m_db->open(path()), qPrintable(m_db->lastError()));
+        QCOMPARE(raw("PRAGMA user_version").toInt(), 2);
+        // Already read: counted from the upgrade, so nothing is deleted at once.
+        QVERIFY(qAbs(readAt(1).toLongLong() - now()) <= 5);
+        QVERIFY(readAt(2).isNull());
+        QCOMPARE(m_db->deleteExpired(now() - 3600), 0);
     }
 };
 

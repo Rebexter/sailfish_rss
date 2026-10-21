@@ -13,7 +13,7 @@
 //     historyDays back
 //  4. set read and starred state from the server's complete ID lists
 //  5. fetch starred articles that are not stored yet, however old
-//  6. delete read, unstarred articles older than historyDays
+//  6. delete read, unstarred articles read more than readRetentionDays ago
 class SyncManager : public QObject
 {
     Q_OBJECT
@@ -36,7 +36,11 @@ public:
 
     SyncManager(GReader::Client *client, Database *database, QObject *parent = nullptr);
 
+    // How far back articles are fetched.
     void setHistoryDays(int days);
+    // How long read, unstarred articles are kept after being read; 0 keeps
+    // them forever.
+    void setReadRetentionDays(int days);
     bool syncing() const;
     ErrorKind lastErrorKind() const;
     QString lastErrorMessage() const;
@@ -77,6 +81,7 @@ private:
     GReader::Client *m_client;
     Database *m_database;
     int m_historyDays = 600;
+    int m_readRetentionDays = 30;
     bool m_syncing = false;
     ErrorKind m_errorKind = ErrorKind::None;
     QString m_errorMessage;

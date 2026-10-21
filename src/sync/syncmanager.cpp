@@ -36,6 +36,11 @@ void SyncManager::setHistoryDays(int days)
     m_historyDays = days;
 }
 
+void SyncManager::setReadRetentionDays(int days)
+{
+    m_readRetentionDays = days;
+}
+
 bool SyncManager::syncing() const
 {
     return m_syncing;
@@ -233,11 +238,12 @@ void SyncManager::fetchMissingStarred(QStringList missing)
 
 void SyncManager::cleanUp()
 {
-    const qint64 cutoffUsec = (nowSecs() - qint64(m_historyDays) * 24 * 3600) * 1000000;
-    const int deleted = m_database->deleteExpired(cutoffUsec);
-    if (!checkStorage(deleted >= 0))
-        return;
-    m_stats.deleted = deleted;
+    if (m_readRetentionDays > 0) {
+        const int deleted = m_database->deleteExpired(nowSecs() - qint64(m_readRetentionDays) * 24 * 3600);
+        if (!checkStorage(deleted >= 0))
+            return;
+        m_stats.deleted = deleted;
+    }
 
     const qint64 syncTime = m_serverTime > 0 ? m_serverTime : nowSecs();
     if (!checkStorage(m_database->setSyncState(LastSyncKey, QString::number(syncTime))))

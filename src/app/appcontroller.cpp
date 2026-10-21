@@ -19,6 +19,9 @@ const QString TokenSecret = QStringLiteral("sessionToken");
 const QString LastSyncKey = QStringLiteral("sync/lastSync");
 const QString RefreshIntervalKey = QStringLiteral("sync/refreshInterval");
 const int DefaultRefreshInterval = 30;
+const QString OldestFirstKey = QStringLiteral("view/oldestFirst");
+const QString ReadRetentionKey = QStringLiteral("storage/readRetention");
+const int DefaultReadRetention = 30;
 
 // Wait a moment after a user action, so several actions go in one request.
 const int SendDelayMs = 3000;
@@ -147,6 +150,39 @@ void AppController::setRefreshInterval(int minutes)
     emit refreshIntervalChanged();
 }
 
+bool AppController::oldestFirst() const
+{
+    return m_settings && m_settings->value(OldestFirstKey, false).toBool();
+}
+
+void AppController::setOldestFirst(bool oldestFirst)
+{
+    if (!m_settings || oldestFirst == this->oldestFirst())
+        return;
+    m_settings->setValue(OldestFirstKey, oldestFirst);
+    emit oldestFirstChanged();
+}
+
+int AppController::readRetention() const
+{
+    return m_settings ? m_settings->value(ReadRetentionKey, DefaultReadRetention).toInt() : DefaultReadRetention;
+}
+
+void AppController::setReadRetention(int days)
+{
+    if (!m_settings || days == readRetention())
+        return;
+    m_settings->setValue(ReadRetentionKey, qMax(0, days));
+    emit readRetentionChanged();
+
+    // A shorter time applies right away rather than at the next sync.
+    if (days > 0) {
+        const qint64 readBefore = QDateTime::currentMSecsSinceEpoch() / 1000 - qint64(days) * 24 * 3600;
+        if (m_database.deleteExpired(readBefore) > 0)
+            emit articlesChanged();
+    }
+}
+
 bool AppController::syncDue() const
 {
     const int interval = refreshInterval();
@@ -230,6 +266,7 @@ void AppController::sync()
         return;
     }
     m_sendTimer.stop();  // the full sync sends pending actions first
+    m_sync.setReadRetentionDays(readRetention());
     m_fullSyncRunning = true;
     emit syncingChanged();
     m_sync.sync();

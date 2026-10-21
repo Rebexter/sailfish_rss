@@ -15,6 +15,7 @@ Page {
 
         controller: app
         streamId: page.streamId
+        oldestFirst: app.oldestFirst
     }
 
     RemorsePopup {
@@ -29,18 +30,46 @@ Page {
 
         header: PageHeader {
             title: page.title
-            description: app.syncing ? qsTr("Refreshing…") : ""
+            description: {
+                if (app.syncing)
+                    return qsTr("Refreshing…")
+                if (articles.filter === ArticleListModel.Unread)
+                    return qsTr("Unread articles")
+                if (articles.filter === ArticleListModel.Read)
+                    return qsTr("Read articles")
+                return qsTr("All articles")
+            }
         }
 
         PullDownMenu {
             busy: app.syncing
 
+            // The two views other than the current one
             MenuItem {
-                text: articles.unreadOnly ? qsTr("Show all articles") : qsTr("Show unread only")
-                onClicked: articles.unreadOnly = !articles.unreadOnly
+                visible: articles.filter !== ArticleListModel.Unread
+                text: qsTr("Show unread articles")
+                onClicked: articles.filter = ArticleListModel.Unread
             }
 
             MenuItem {
+                visible: articles.filter !== ArticleListModel.All
+                text: qsTr("Show all articles")
+                onClicked: articles.filter = ArticleListModel.All
+            }
+
+            MenuItem {
+                visible: articles.filter !== ArticleListModel.Read
+                text: qsTr("Show read articles")
+                onClicked: articles.filter = ArticleListModel.Read
+            }
+
+            MenuItem {
+                text: app.oldestFirst ? qsTr("Show newest first") : qsTr("Show oldest first")
+                onClicked: app.oldestFirst = !app.oldestFirst
+            }
+
+            MenuItem {
+                visible: articles.filter !== ArticleListModel.Read
                 text: qsTr("Mark all as read")
                 enabled: list.count > 0
                 onClicked: remorse.execute(qsTr("Marking all as read"), function() { articles.markAllRead() })
@@ -74,9 +103,8 @@ Page {
 
                 anchors {
                     left: parent.left
-                    right: parent.right
+                    right: readMarker.left
                     leftMargin: Theme.horizontalPageMargin
-                    rightMargin: Theme.horizontalPageMargin
                     verticalCenter: parent.verticalCenter
                 }
 
@@ -102,13 +130,50 @@ Page {
                 }
             }
 
+            // Tapping the marker toggles read without opening the article.
+            MouseArea {
+                id: readMarker
+
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    right: parent.right
+                }
+                width: Theme.itemSizeSmall
+
+                Rectangle {
+                    readonly property bool pressed: readMarker.pressed && readMarker.containsMouse
+
+                    anchors.centerIn: parent
+                    width: Theme.paddingLarge
+                    height: width
+                    radius: width / 2
+                    color: model.read ? "transparent" : Theme.highlightColor
+                    border.width: model.read ? Math.max(1, Math.round(Theme.paddingSmall / 3)) : 0
+                    border.color: pressed ? Theme.highlightColor : Theme.secondaryColor
+                    scale: pressed ? 1.3 : 1
+
+                    Behavior on scale {
+                        NumberAnimation { duration: 100 }
+                    }
+                }
+
+                onClicked: app.setRead(model.articleId, !model.read)
+            }
+
             onClicked: pageStack.push(Qt.resolvedUrl("ArticlePage.qml"), { articleId: model.articleId })
         }
 
         ViewPlaceholder {
             enabled: list.count === 0
-            text: articles.unreadOnly ? qsTr("No unread articles") : qsTr("No articles")
-            hintText: articles.unreadOnly ? qsTr("Pull down to show all articles") : ""
+            text: {
+                if (articles.filter === ArticleListModel.Unread)
+                    return qsTr("No unread articles")
+                if (articles.filter === ArticleListModel.Read)
+                    return qsTr("No read articles")
+                return qsTr("No articles")
+            }
+            hintText: articles.filter === ArticleListModel.Unread ? qsTr("Pull down to show read articles") : ""
         }
 
         VerticalScrollDecorator { }

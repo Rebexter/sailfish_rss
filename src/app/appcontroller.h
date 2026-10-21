@@ -29,6 +29,10 @@ class AppController : public QObject
     Q_PROPERTY(int unreadCount READ unreadCount NOTIFY unreadCountChanged)
     // Minutes between automatic refreshes while the app runs; 0 is off.
     Q_PROPERTY(int refreshInterval READ refreshInterval WRITE setRefreshInterval NOTIFY refreshIntervalChanged)
+    // Article lists show the oldest arrival first.
+    Q_PROPERTY(bool oldestFirst READ oldestFirst WRITE setOldestFirst NOTIFY oldestFirstChanged)
+    // Days to keep read, unstarred articles after reading; 0 is forever.
+    Q_PROPERTY(int readRetention READ readRetention WRITE setReadRetention NOTIFY readRetentionChanged)
 
 public:
     explicit AppController(QObject *parent = nullptr);
@@ -47,6 +51,10 @@ public:
     int unreadCount();
     int refreshInterval() const;
     void setRefreshInterval(int minutes);
+    bool oldestFirst() const;
+    void setOldestFirst(bool oldestFirst);
+    int readRetention() const;
+    void setReadRetention(int days);
 
     Q_INVOKABLE void login(const QString &serverUrl, const QString &user, const QString &apiPassword);
     Q_INVOKABLE void logout();
@@ -73,6 +81,8 @@ signals:
     void syncErrorChanged();
     void unreadCountChanged();
     void refreshIntervalChanged();
+    void oldestFirstChanged();
+    void readRetentionChanged();
     void loginFinished(bool ok, const QString &message);
     // Lists need to be reloaded (after a sync, mark all read or logout).
     void articlesChanged();

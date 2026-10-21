@@ -44,17 +44,31 @@ void ArticleListModel::setStreamId(const QString &streamId)
     reload();
 }
 
-bool ArticleListModel::unreadOnly() const
+ArticleListModel::Filter ArticleListModel::filter() const
 {
-    return m_unreadOnly;
+    return m_filter;
 }
 
-void ArticleListModel::setUnreadOnly(bool unreadOnly)
+void ArticleListModel::setFilter(Filter filter)
 {
-    if (m_unreadOnly == unreadOnly)
+    if (m_filter == filter)
         return;
-    m_unreadOnly = unreadOnly;
-    emit unreadOnlyChanged();
+    m_filter = filter;
+    emit filterChanged();
+    reload();
+}
+
+bool ArticleListModel::oldestFirst() const
+{
+    return m_oldestFirst;
+}
+
+void ArticleListModel::setOldestFirst(bool oldestFirst)
+{
+    if (m_oldestFirst == oldestFirst)
+        return;
+    m_oldestFirst = oldestFirst;
+    emit oldestFirstChanged();
     reload();
 }
 
@@ -111,7 +125,7 @@ void ArticleListModel::reload()
         return;
     QList<Database::ItemSummary> rows;
     if (m_controller && m_controller->loggedIn() && !m_streamId.isEmpty())
-        rows = m_controller->database()->items(m_streamId, m_unreadOnly);
+        rows = query();
 
     beginResetModel();
     m_rows = rows;
@@ -128,14 +142,15 @@ void ArticleListModel::refresh()
         return;
     }
     Database *db = m_controller->database();
-    const QList<Database::ItemSummary> fresh = db->items(m_streamId, m_unreadOnly);
+    const QList<Database::ItemSummary> fresh = query();
     QHash<QString, int> freshIndex;
     for (int i = 0; i < fresh.size(); ++i)
         freshIndex.insert(fresh.at(i).id, i);
 
     // Update or remove the listed articles. One missing from the fresh list
-    // was deleted, or no longer matches it (read in an unread-only list,
-    // unstarred in Starred); the latter stay with their new state.
+    // was deleted, or no longer matches it (read in an unread list, unread
+    // in a read list, unstarred in Starred); the latter stay with their new
+    // state.
     for (int i = m_rows.size() - 1; i >= 0; --i) {
         Database::ItemSummary &row = m_rows[i];
         bool read;
@@ -162,7 +177,7 @@ void ArticleListModel::refresh()
         }
     }
 
-    // Insert new articles; both lists are sorted newest arrival first.
+    // Insert new articles; both lists are sorted the same way.
     QSet<QString> listed;
     for (const Database::ItemSummary &row : m_rows)
         listed.insert(row.id);
@@ -170,7 +185,9 @@ void ArticleListModel::refresh()
     for (const Database::ItemSummary &item : fresh) {
         if (listed.contains(item.id))
             continue;
-        while (position < m_rows.size() && m_rows.at(position).crawledUsec > item.crawledUsec)
+        while (position < m_rows.size()
+               && (m_oldestFirst ? m_rows.at(position).crawledUsec < item.crawledUsec
+                                 : m_rows.at(position).crawledUsec > item.crawledUsec))
             ++position;
         beginInsertRows(QModelIndex(), position, position);
         m_rows.insert(position, item);
@@ -189,6 +206,16 @@ void ArticleListModel::markAllRead()
     m_controller->markAllRead(m_streamId, newest);
     // Unlike single articles, these should not stay in an unread-only list.
     reload();
+}
+
+QList<Database::ItemSummary> ArticleListModel::query() const
+{
+    Database::ItemFilter filter = Database::ItemFilter::All;
+    if (m_filter == Unread)
+        filter = Database::ItemFilter::Unread;
+    else if (m_filter == Read)
+        filter = Database::ItemFilter::Read;
+    return m_controller->database()->items(m_streamId, filter, m_oldestFirst);
 }
 
 void ArticleListModel::updateArticle(const QString &itemId, bool read, bool starred)

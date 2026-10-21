@@ -11,9 +11,11 @@ using Kind = Database::PendingAction::Kind;
 
 namespace {
 
-const int SchemaVersion = 1;
+const int SchemaVersion = 2;
 
-const char *const Schema[] = {
+// Each version's statements; a new database runs all of them, an older one
+// the versions it lacks.
+const char *const SchemaVersion1[] = {
     "CREATE TABLE feeds ("
     "  id TEXT PRIMARY KEY,"
     "  title TEXT NOT NULL,"
@@ -47,6 +49,20 @@ const char *const Schema[] = {
     "CREATE TABLE sync_state ("
     "  key TEXT PRIMARY KEY,"
     "  value TEXT)",
+};
+
+// When an article became read, so read articles can be kept for a set time
+// after reading. Triggers keep it current however read changes: in the app,
+// by mark all as read, or from the server during a sync.
+const char *const SchemaVersion2[] = {
+    "ALTER TABLE items ADD COLUMN read_at INTEGER",  // Unix seconds, NULL while unread
+    // For articles already read the time is unknown; start counting now.
+    "UPDATE items SET read_at = CAST(strftime('%s', 'now') AS INTEGER) WHERE read = 1",
+    "CREATE TRIGGER items_read_at_insert AFTER INSERT ON items WHEN NEW.read = 1 "
+    "BEGIN UPDATE items SET read_at = CAST(strftime('%s', 'now') AS INTEGER) WHERE id = NEW.id; END",
+    "CREATE TRIGGER items_read_at_update AFTER UPDATE OF read ON items WHEN NEW.read != OLD.read "
+    "BEGIN UPDATE items SET read_at = CASE WHEN NEW.read = 1 THEN CAST(strftime('%s', 'now') AS INTEGER) END "
+    "WHERE id = NEW.id; END",
 };
 
 QString kindName(Kind kind)
@@ -147,13 +163,11 @@ bool Database::open(const QString &path)
     const int version = count(QStringLiteral("PRAGMA user_version"));
     if (version < 0)
         return false;
-    if (version == 0)
-        return createSchema();
     if (version > SchemaVersion) {
         m_error = QStringLiteral("The database was created by a newer version of SailRSS");
         return false;
     }
-    return true;
+    return version == SchemaVersion || upgrade(version);
 }
 
 QString Database::lastError() const
@@ -161,13 +175,20 @@ QString Database::lastError() const
     return m_error;
 }
 
-bool Database::createSchema()
+bool Database::upgrade(int fromVersion)
 {
     Transaction transaction(m_db);
-    for (const char *statement : Schema) {
-        if (!exec(QString::fromLatin1(statement)))
-            return false;
-    }
+    const auto run = [this](const auto &statements) {
+        for (const char *statement : statements) {
+            if (!exec(QString::fromLatin1(statement)))
+                return false;
+        }
+        return true;
+    };
+    if (fromVersion < 1 && !run(SchemaVersion1))
+        return false;
+    if (fromVersion < 2 && !run(SchemaVersion2))
+        return false;
     if (!exec(QStringLiteral("PRAGMA user_version = %1").arg(SchemaVersion)))
         return false;
     return transaction.commit();
@@ -300,13 +321,13 @@ QStringList Database::missingItemIds(const QStringList &ids)
     return missing;
 }
 
-int Database::deleteExpired(qint64 cutoffUsec)
+int Database::deleteExpired(qint64 readBeforeSecs)
 {
     QSqlQuery query(m_db);
     query.prepare(QStringLiteral(
-        "DELETE FROM items WHERE crawled_usec < ? AND read = 1 AND starred = 0 "
+        "DELETE FROM items WHERE read = 1 AND starred = 0 AND read_at < ? "
         "AND CAST(id AS TEXT) NOT IN (SELECT target FROM pending_actions WHERE kind IN ('read', 'starred'))"));
-    query.addBindValue(cutoffUsec);
+    query.addBindValue(readBeforeSecs);
     if (!query.exec()) {
         m_error = query.lastError().text();
         return -1;
@@ -501,7 +522,7 @@ QList<Database::StreamSummary> Database::feeds(const QString &folderId)
     return feeds;
 }
 
-QList<Database::ItemSummary> Database::items(const QString &streamId, bool unreadOnly)
+QList<Database::ItemSummary> Database::items(const QString &streamId, ItemFilter filter, bool oldestFirst)
 {
     QList<ItemSummary> items;
     const std::optional<QString> condition = streamCondition(streamId);
@@ -509,11 +530,16 @@ QList<Database::ItemSummary> Database::items(const QString &streamId, bool unrea
         m_error = QStringLiteral("Unsupported stream %1").arg(streamId);
         return items;
     }
+    QString state;
+    if (filter == ItemFilter::Unread)
+        state = QStringLiteral("AND i.read = 0");
+    else if (filter == ItemFilter::Read)
+        state = QStringLiteral("AND i.read = 1");
     QSqlQuery query(m_db);
     query.prepare(QStringLiteral("SELECT i.id, f.title, i.title, i.author, i.published, i.crawled_usec, i.read, i.starred "
                                  "FROM items i LEFT JOIN feeds f ON f.id = i.feed_id "
-                                 "WHERE (%1) %2 ORDER BY i.crawled_usec DESC")
-                      .arg(*condition, unreadOnly ? QStringLiteral("AND i.read = 0") : QString()));
+                                 "WHERE (%1) %2 ORDER BY i.crawled_usec %3")
+                      .arg(*condition, state, oldestFirst ? QStringLiteral("ASC") : QStringLiteral("DESC")));
     if (condition->contains(QLatin1String(":stream")))
         query.bindValue(QStringLiteral(":stream"), streamId);
     if (!query.exec()) {

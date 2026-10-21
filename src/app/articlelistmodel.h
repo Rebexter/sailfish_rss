@@ -9,19 +9,27 @@
 
 class AppController;
 
-// Articles of one stream, newest arrival first. Articles marked read stay
-// in an unread-only list until the next reload, so they do not disappear
-// while the user is reading. After a sync the list is updated in place, so
-// the scroll position is kept.
+// Articles of one stream by arrival, newest or oldest first, optionally
+// only unread or only read ones. An article whose state changes stays in a
+// filtered list until the next reload, so it does not disappear while the
+// user is reading.
 class ArticleListModel : public QAbstractListModel, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(AppController *controller READ controller WRITE setController NOTIFY controllerChanged)
     Q_PROPERTY(QString streamId READ streamId WRITE setStreamId NOTIFY streamIdChanged)
-    Q_PROPERTY(bool unreadOnly READ unreadOnly WRITE setUnreadOnly NOTIFY unreadOnlyChanged)
+    Q_PROPERTY(Filter filter READ filter WRITE setFilter NOTIFY filterChanged)
+    Q_PROPERTY(bool oldestFirst READ oldestFirst WRITE setOldestFirst NOTIFY oldestFirstChanged)
 
 public:
+    enum Filter {
+        Unread,
+        All,
+        Read,
+    };
+    Q_ENUM(Filter)
+
     enum Role {
         ArticleIdRole = Qt::UserRole + 1,
         TitleRole,
@@ -38,8 +46,10 @@ public:
     void setController(AppController *controller);
     QString streamId() const;
     void setStreamId(const QString &streamId);
-    bool unreadOnly() const;
-    void setUnreadOnly(bool unreadOnly);
+    Filter filter() const;
+    void setFilter(Filter filter);
+    bool oldestFirst() const;
+    void setOldestFirst(bool oldestFirst);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role) const override;
@@ -60,14 +70,17 @@ public:
 signals:
     void controllerChanged();
     void streamIdChanged();
-    void unreadOnlyChanged();
+    void filterChanged();
+    void oldestFirstChanged();
 
 private:
     void updateArticle(const QString &itemId, bool read, bool starred);
+    QList<Database::ItemSummary> query() const;
 
     QPointer<AppController> m_controller;
     QString m_streamId;
-    bool m_unreadOnly = true;
+    Filter m_filter = Unread;
+    bool m_oldestFirst = false;
     QList<Database::ItemSummary> m_rows;
     bool m_complete = true;
 };

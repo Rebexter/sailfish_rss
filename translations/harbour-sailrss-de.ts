@@ -42,14 +42,6 @@
         <translation>Wird aktualisiert…</translation>
     </message>
     <message>
-        <source>Show all articles</source>
-        <translation>Alle Artikel anzeigen</translation>
-    </message>
-    <message>
-        <source>Show unread only</source>
-        <translation>Nur ungelesene anzeigen</translation>
-    </message>
-    <message>
         <source>Mark all as read</source>
         <translation>Alle als gelesen markieren</translation>
     </message>
@@ -86,8 +78,44 @@
         <translation>Keine Artikel</translation>
     </message>
     <message>
-        <source>Pull down to show all articles</source>
-        <translation>Herunterziehen, um alle Artikel anzuzeigen</translation>
+        <source>Show read articles</source>
+        <translation>Gelesene Artikel anzeigen</translation>
+    </message>
+    <message>
+        <source>Pull down to show read articles</source>
+        <translation>Herunterziehen, um gelesene Artikel anzuzeigen</translation>
+    </message>
+    <message>
+        <source>Unread articles</source>
+        <translation>Ungelesene Artikel</translation>
+    </message>
+    <message>
+        <source>Read articles</source>
+        <translation>Gelesene Artikel</translation>
+    </message>
+    <message>
+        <source>All articles</source>
+        <translation>Alle Artikel</translation>
+    </message>
+    <message>
+        <source>Show unread articles</source>
+        <translation>Ungelesene Artikel anzeigen</translation>
+    </message>
+    <message>
+        <source>Show all articles</source>
+        <translation>Alle Artikel anzeigen</translation>
+    </message>
+    <message>
+        <source>No read articles</source>
+        <translation>Keine gelesenen Artikel</translation>
+    </message>
+    <message>
+        <source>Show newest first</source>
+        <translation>Neueste zuerst anzeigen</translation>
+    </message>
+    <message>
+        <source>Show oldest first</source>
+        <translation>Älteste zuerst anzeigen</translation>
     </message>
 </context>
 <context>
@@ -262,6 +290,38 @@
     <message>
         <source>Every 5 minutes</source>
         <translation>Alle 5 Minuten</translation>
+    </message>
+    <message>
+        <source>Storage</source>
+        <translation>Speicher</translation>
+    </message>
+    <message>
+        <source>Keep read articles</source>
+        <translation>Gelesene Artikel behalten</translation>
+    </message>
+    <message>
+        <source>Counted from when an article arrived. Unread and starred articles are always kept.</source>
+        <translation>Gezählt ab dem Eintreffen eines Artikels. Ungelesene und mit Stern markierte Artikel werden immer behalten.</translation>
+    </message>
+    <message>
+        <source>1 day</source>
+        <translation>1 Tag</translation>
+    </message>
+    <message>
+        <source>1 week</source>
+        <translation>1 Woche</translation>
+    </message>
+    <message>
+        <source>1 month</source>
+        <translation>1 Monat</translation>
+    </message>
+    <message>
+        <source>1 year</source>
+        <translation>1 Jahr</translation>
+    </message>
+    <message>
+        <source>Forever</source>
+        <translation>Für immer</translation>
     </message>
 </context>
 <context>
