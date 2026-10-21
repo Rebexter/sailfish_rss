@@ -1,9 +1,7 @@
-// Sync tests against a real FreshRSS server, using the same environment
-// variables as tst_greaderlive (development only):
-//   SAILRSS_URL, SAILRSS_USER, SAILRSS_PASSWORD, optional SAILRSS_LIVE_WRITE=1
-// Run with: scripts/dev.sh live-test
-// TODO(phase 4): remove the environment variables together with the app's
-// test-only credential path once credentials are stored in the keychain.
+// Sync tests against the throwaway local FreshRSS started with
+// scripts/dev.sh test-server. They change read and starred state freely,
+// so never point them at a real account. scripts/dev.sh live-test sets
+// SAILRSS_TEST_URL, SAILRSS_TEST_USER and SAILRSS_TEST_PASSWORD.
 
 #include "api/greaderclient.h"
 #include "storage/database.h"
@@ -25,7 +23,6 @@ private:
     QTemporaryDir m_dir;
     Client m_client;
     Database m_db;
-    bool m_write = false;
     int m_firstFetch = 0;
 
     static QString env(const char *name) { return QString::fromLocal8Bit(qgetenv(name)); }
@@ -79,12 +76,11 @@ private:
 private slots:
     void initTestCase()
     {
-        const QString url = env("SAILRSS_URL");
-        const QString user = env("SAILRSS_USER");
-        const QString password = env("SAILRSS_PASSWORD");
-        m_write = env("SAILRSS_LIVE_WRITE") == QLatin1String("1");
+        const QString url = env("SAILRSS_TEST_URL");
+        const QString user = env("SAILRSS_TEST_USER");
+        const QString password = env("SAILRSS_TEST_PASSWORD");
         if (url.isEmpty() || user.isEmpty() || password.isEmpty())
-            QSKIP("Set SAILRSS_URL, SAILRSS_USER and SAILRSS_PASSWORD to run the live tests");
+            QSKIP("Run these with scripts/dev.sh live-test");
 
         QVERIFY(m_dir.isValid());
         QVERIFY2(m_db.open(m_dir.path() + QStringLiteral("/sailrss.sqlite")), qPrintable(m_db.lastError()));
@@ -160,8 +156,6 @@ private slots:
 
     void offlineChangeIsSentLater()
     {
-        if (!m_write)
-            QSKIP("Set SAILRSS_LIVE_WRITE=1 to test writes");
         Item newest;
         QVERIFY(serverNewest(&newest));
         QVERIFY(m_db.item(newest.id).has_value());

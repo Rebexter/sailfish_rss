@@ -1,11 +1,7 @@
-// Tests against a real FreshRSS server. Development only: reads the server
-// and credentials from the environment and skips if they are not set.
-//   SAILRSS_URL, SAILRSS_USER, SAILRSS_PASSWORD (the API password)
-//   SAILRSS_LIVE_WRITE=1 also runs tests that change read and starred
-//   state; they restore the original state afterwards.
-// Run with: scripts/dev.sh live-test
-// TODO(phase 4): remove the environment variables together with the app's
-// test-only credential path once credentials are stored in the keychain.
+// API client tests against the throwaway local FreshRSS started with
+// scripts/dev.sh test-server. They change read and starred state freely,
+// so never point them at a real account. scripts/dev.sh live-test sets
+// SAILRSS_TEST_URL, SAILRSS_TEST_USER and SAILRSS_TEST_PASSWORD.
 
 #include "api/greaderclient.h"
 
@@ -53,7 +49,6 @@ private:
     Client m_client;
     QString m_user;
     QString m_password;
-    bool m_write = false;
 
     bool fetchStream(const StreamQuery &query, StreamPage *page)
     {
@@ -98,12 +93,11 @@ private:
 private slots:
     void initTestCase()
     {
-        const QString url = env("SAILRSS_URL");
-        m_user = env("SAILRSS_USER");
-        m_password = env("SAILRSS_PASSWORD");
-        m_write = env("SAILRSS_LIVE_WRITE") == QLatin1String("1");
+        const QString url = env("SAILRSS_TEST_URL");
+        m_user = env("SAILRSS_TEST_USER");
+        m_password = env("SAILRSS_TEST_PASSWORD");
         if (url.isEmpty() || m_user.isEmpty() || m_password.isEmpty())
-            QSKIP("Set SAILRSS_URL, SAILRSS_USER and SAILRSS_PASSWORD to run the live tests");
+            QSKIP("Run these with scripts/dev.sh live-test");
 
         m_client.setServerUrl(QUrl::fromUserInput(url));
         qInfo("API address: %s", qPrintable(m_client.apiUrl().toString()));
@@ -224,8 +218,6 @@ private slots:
 
     void readRoundTrip()
     {
-        if (!m_write)
-            QSKIP("Set SAILRSS_LIVE_WRITE=1 to test writes");
         Item item;
         QVERIFY(newestItem(&item));
         if (item.id.isEmpty())
@@ -247,8 +239,6 @@ private slots:
 
     void starRoundTrip()
     {
-        if (!m_write)
-            QSKIP("Set SAILRSS_LIVE_WRITE=1 to test writes");
         Item item;
         QVERIFY(newestItem(&item));
         if (item.id.isEmpty())
@@ -270,8 +260,6 @@ private slots:
 
     void markAllAsReadIsAccepted()
     {
-        if (!m_write)
-            QSKIP("Set SAILRSS_LIVE_WRITE=1 to test writes");
         // Nothing is older than 1 µs, so this changes nothing on the server.
         const Error error = call([&](const Client::Callback &done) {
             m_client.markAllAsRead(StreamId::ReadingList, 1, done);

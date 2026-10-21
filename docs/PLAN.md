@@ -53,11 +53,8 @@ Each phase ends with something that can be checked on the phone.
 - Fetch articles in pages, using the continuation token and a "since"
   timestamp.
 - Mark items read or starred, mark all as read.
-- Unit tests against saved JSON responses; manual tests against a local
-  FreshRSS in Podman (`freshrss/freshrss`) and the real server.
-- Test credentials come from the environment variables `SAILRSS_URL`,
-  `SAILRSS_USER` and `SAILRSS_PASSWORD`. **This is for development only**:
-  remove it in Phase 4, when real credential storage replaces it.
+- Unit tests against saved JSON responses; live tests against a throwaway
+  FreshRSS in Podman (`scripts/dev.sh test-server`), never a real account.
 - Done when: tests pass against the local FreshRSS.
 
 ### 2. Storage and sync ✅
@@ -91,25 +88,26 @@ Each phase ends with something that can be checked on the phone.
   still an option.
 - User actions are sent a few seconds after they happen (send-only sync);
   a full sync runs on start, on refresh and from the cover.
-- **Temporary:** the session token (never the password) is stored in plain
-  text in the app's sandboxed `settings.ini` until Phase 4.
+- The session token (never the password) was stored in plain text in
+  `settings.ini` until Phase 4 moved it to the keychain.
 - Done when: reading feeds works day to day.
 
 ### 4. Sailfish integration
 - Cover with unread count.
 - Background refresh while the app is open (`Nemo.KeepAlive`).
 - New-article notifications (`Nemo.Notifications`).
-- Proper credential management: the login page stores the server URL and
-  user, and the API password goes in the system keychain (`Sailfish.Secrets`,
-  adds the `Secrets` permission). Move the session token out of
-  `settings.ini` into the keychain too, and remove the `SAILRSS_*`
-  environment variable test path from Phase 1 at the same time.
+- Credential management ✅: the session token is kept in the system keychain
+  (Sailfish Secrets, `Secrets` permission), in an encrypted collection only
+  the app can read; tokens left in `settings.ini` by earlier versions move
+  there on start. The API password is never stored. The live tests stopped
+  taking real credentials from the environment and use only the local test
+  server.
 - Share (`Sailfish.Share`), settings page, translations.
 
 ### 5. Release
 - Stripped release build, real icon, store description and screenshots.
-- Check that no `SAILRSS_*` environment variable handling is left in the app,
-  and that no token is stored in `settings.ini`.
+- Check that the app reads no `SAILRSS_*` environment variables (only the
+  live tests do), and that no token is stored in `settings.ini`.
 - Harbour validator clean, then submit to the Jolla Store.
 
 ### Later
