@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=harbour-sailrss
+Exec=harbour-sailrss
+Name=SailRSS
+
+[X-Sailjail]
+OrganizationName=io.github.rebexter
+ApplicationName=harbour-sailrss
+Permissions=Internet
