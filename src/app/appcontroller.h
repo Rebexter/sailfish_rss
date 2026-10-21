@@ -27,6 +27,8 @@ class AppController : public QObject
     Q_PROPERTY(QDateTime lastSync READ lastSync NOTIFY lastSyncChanged)
     Q_PROPERTY(QString syncError READ syncError NOTIFY syncErrorChanged)
     Q_PROPERTY(int unreadCount READ unreadCount NOTIFY unreadCountChanged)
+    // Minutes between automatic refreshes while the app runs; 0 is off.
+    Q_PROPERTY(int refreshInterval READ refreshInterval WRITE setRefreshInterval NOTIFY refreshIntervalChanged)
 
 public:
     explicit AppController(QObject *parent = nullptr);
@@ -43,10 +45,15 @@ public:
     QDateTime lastSync() const;
     QString syncError() const;
     int unreadCount();
+    int refreshInterval() const;
+    void setRefreshInterval(int minutes);
 
     Q_INVOKABLE void login(const QString &serverUrl, const QString &user, const QString &apiPassword);
     Q_INVOKABLE void logout();
     Q_INVOKABLE void sync();
+    // True if automatic refresh is on and the last sync is older than its
+    // interval, e.g. when the app comes back to the foreground.
+    Q_INVOKABLE bool syncDue() const;
 
     Q_INVOKABLE void setRead(const QString &itemId, bool read);
     Q_INVOKABLE void setStarred(const QString &itemId, bool starred);
@@ -63,6 +70,7 @@ signals:
     void lastSyncChanged();
     void syncErrorChanged();
     void unreadCountChanged();
+    void refreshIntervalChanged();
     void loginFinished(bool ok, const QString &message);
     // Lists need to be reloaded (after a sync, mark all read or logout).
     void articlesChanged();

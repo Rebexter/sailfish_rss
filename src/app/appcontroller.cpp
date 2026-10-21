@@ -16,6 +16,8 @@ const QString LegacyTokenKey = QStringLiteral("account/token");
 // The session token lives in the keychain; the API password is never stored.
 const QString TokenSecret = QStringLiteral("sessionToken");
 const QString LastSyncKey = QStringLiteral("sync/lastSync");
+const QString RefreshIntervalKey = QStringLiteral("sync/refreshInterval");
+const int DefaultRefreshInterval = 30;
 
 // Wait a moment after a user action, so several actions go in one request.
 const int SendDelayMs = 3000;
@@ -131,6 +133,28 @@ int AppController::unreadCount()
     return m_loggedIn ? qMax(0, m_database.unreadCount(GReader::StreamId::ReadingList)) : 0;
 }
 
+int AppController::refreshInterval() const
+{
+    return m_settings ? m_settings->value(RefreshIntervalKey, DefaultRefreshInterval).toInt() : DefaultRefreshInterval;
+}
+
+void AppController::setRefreshInterval(int minutes)
+{
+    if (!m_settings || minutes == refreshInterval())
+        return;
+    m_settings->setValue(RefreshIntervalKey, qMax(0, minutes));
+    emit refreshIntervalChanged();
+}
+
+bool AppController::syncDue() const
+{
+    const int interval = refreshInterval();
+    if (!m_loggedIn || interval <= 0)
+        return false;
+    const QDateTime last = lastSync();
+    return !last.isValid() || last.secsTo(QDateTime::currentDateTimeUtc()) >= qint64(interval) * 60;
+}
+
 void AppController::login(const QString &serverUrl, const QString &user, const QString &apiPassword)
 {
     if (m_loggingIn)
@@ -220,7 +244,8 @@ void AppController::onSyncFinished(bool ok)
     if (ok) {
         setSyncError(QString());
         if (wasFull) {
-            m_settings->setValue(LastSyncKey, QDateTime::currentDateTimeUtc());
+            // Readable text instead of QSettings' binary QDateTime; both load.
+            m_settings->setValue(LastSyncKey, QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
             emit lastSyncChanged();
         }
     } else {

@@ -24,6 +24,30 @@ Page {
             }
 
             SectionHeader {
+                text: qsTr("Refresh")
+            }
+
+            ComboBox {
+                // Minutes, matching the menu entries
+                readonly property var intervals: [0, 5, 15, 30, 60, 120, 240]
+
+                width: parent.width
+                label: qsTr("Refresh automatically")
+                description: qsTr("While SailRSS is open, also when it is in the background")
+                currentIndex: Math.max(0, intervals.indexOf(app.refreshInterval))
+                menu: ContextMenu {
+                    MenuItem { text: qsTr("Off") }
+                    MenuItem { text: qsTr("Every 5 minutes") }
+                    MenuItem { text: qsTr("Every 15 minutes") }
+                    MenuItem { text: qsTr("Every 30 minutes") }
+                    MenuItem { text: qsTr("Every hour") }
+                    MenuItem { text: qsTr("Every 2 hours") }
+                    MenuItem { text: qsTr("Every 4 hours") }
+                }
+                onCurrentIndexChanged: app.refreshInterval = intervals[currentIndex]
+            }
+
+            SectionHeader {
                 text: qsTr("Account")
             }
 

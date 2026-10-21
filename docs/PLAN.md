@@ -94,7 +94,11 @@ Each phase ends with something that can be checked on the phone.
 
 ### 4. Sailfish integration
 - Cover with unread count.
-- Background refresh while the app is open (`Nemo.KeepAlive`).
+- Background refresh ✅ while the app is open, also minimized
+  (`Nemo.KeepAlive` BackgroundJob; off, 5, 15, 30 minutes, 1, 2 or 4 hours,
+  default 30 minutes), plus a catch-up sync when the app returns to the
+  foreground. Lists merge sync results in place and keep their scroll
+  position. Not yet verified with the phone locked.
 - New-article notifications (`Nemo.Notifications`).
 - Credential management ✅: the session token is kept in the system keychain
   (Sailfish Secrets, `Secrets` permission), in an encrypted collection only
@@ -102,7 +106,8 @@ Each phase ends with something that can be checked on the phone.
   there on start. The API password is never stored. The live tests stopped
   taking real credentials from the environment and use only the local test
   server.
-- Share (`Sailfish.Share`), settings page, translations.
+- Settings page ✅ (refresh interval, account, log out).
+- Share (`Sailfish.Share`), translations.
 
 ### 5. Release
 - Stripped release build, real icon, store description and screenshots.

@@ -216,6 +216,46 @@
         <source>Logging out removes the articles stored on this device; your feeds stay on the server. Changes that were not sent yet, for example while offline, are lost.</source>
         <translation>Beim Abmelden werden die auf diesem Gerät gespeicherten Artikel entfernt; deine Feeds bleiben auf dem Server. Noch nicht gesendete Änderungen, etwa aus der Offline-Zeit, gehen verloren.</translation>
     </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Aktualisierung</translation>
+    </message>
+    <message>
+        <source>Refresh automatically</source>
+        <translation>Automatisch aktualisieren</translation>
+    </message>
+    <message>
+        <source>While SailRSS is open, also when it is in the background</source>
+        <translation>Solange SailRSS geöffnet ist, auch im Hintergrund</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Aus</translation>
+    </message>
+    <message>
+        <source>Every 15 minutes</source>
+        <translation>Alle 15 Minuten</translation>
+    </message>
+    <message>
+        <source>Every 30 minutes</source>
+        <translation>Alle 30 Minuten</translation>
+    </message>
+    <message>
+        <source>Every hour</source>
+        <translation>Jede Stunde</translation>
+    </message>
+    <message>
+        <source>Every 2 hours</source>
+        <translation>Alle 2 Stunden</translation>
+    </message>
+    <message>
+        <source>Every 4 hours</source>
+        <translation>Alle 4 Stunden</translation>
+    </message>
+    <message>
+        <source>Every 5 minutes</source>
+        <translation>Alle 5 Minuten</translation>
+    </message>
 </context>
 <context>
     <name>StreamListModel</name>
