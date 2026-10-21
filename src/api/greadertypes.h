@@ -75,6 +75,7 @@ struct Item {
 struct StreamPage {
     QList<Item> items;
     QString continuation;  // empty on the last page
+    qint64 updated = 0;    // server time of the response, Unix seconds
 };
 
 struct ItemIdsPage {

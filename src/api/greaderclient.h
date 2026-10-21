@@ -79,6 +79,8 @@ public:
     void fetchUnreadCounts(const ResultCallback<QList<UnreadCount>> &done);
     void fetchStream(const StreamQuery &query, const ResultCallback<StreamPage> &done);
     void fetchItemIds(const StreamQuery &query, const ResultCallback<ItemIdsPage> &done);
+    // Fetches the given items (decimal IDs); unknown IDs are left out.
+    void fetchItems(const QStringList &itemIds, const ResultCallback<StreamPage> &done);
 
     // Adds and removes stream IDs (e.g. StreamId::Read) on the given items.
     void editTags(const QStringList &itemIds, const QStringList &add, const QStringList &remove,

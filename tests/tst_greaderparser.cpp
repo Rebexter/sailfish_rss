@@ -95,6 +95,7 @@ private slots:
         const auto page = Parser::parseStream(fixture("stream-page.json"));
         QVERIFY(page.has_value());
         QCOMPARE(page->continuation, QStringLiteral("1792608449293847"));
+        QCOMPARE(page->updated, Q_INT64_C(1792608469));
         QCOMPARE(page->items.size(), 2);  // the item with an invalid ID is skipped
 
         const Item &first = page->items.at(0);

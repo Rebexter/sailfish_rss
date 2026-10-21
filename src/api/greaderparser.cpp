@@ -219,6 +219,7 @@ std::optional<StreamPage> parseStream(const QByteArray &json, QString *error)
             page.items.append(item);
     }
     page.continuation = object->value(QStringLiteral("continuation")).toString();
+    page.updated = toInt64(object->value(QStringLiteral("updated")));
     return page;
 }
 

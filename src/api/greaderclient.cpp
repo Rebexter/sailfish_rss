@@ -144,6 +144,14 @@ void Client::fetchItemIds(const StreamQuery &query, const ResultCallback<ItemIds
     get(QStringLiteral("/reader/api/0/stream/items/ids"), streamParams(query), parsed(&Parser::parseItemIds, done));
 }
 
+void Client::fetchItems(const QStringList &itemIds, const ResultCallback<StreamPage> &done)
+{
+    Params form;
+    for (const QString &id : itemIds)
+        form.append({QStringLiteral("i"), id});
+    post(QStringLiteral("/reader/api/0/stream/items/contents"), form, parsed(&Parser::parseStream, done));
+}
+
 void Client::editTags(const QStringList &itemIds, const QStringList &add, const QStringList &remove,
                       const Callback &done)
 {
