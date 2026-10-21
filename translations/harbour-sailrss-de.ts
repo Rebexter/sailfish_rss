@@ -23,6 +23,10 @@
         <source>Storage error: %1</source>
         <translation>Speicherfehler: %1</translation>
     </message>
+    <message>
+        <source>Cannot save the session in the keychain: %1</source>
+        <translation>Die Sitzung kann nicht im Schlüsselbund gespeichert werden: %1</translation>
+    </message>
 </context>
 <context>
     <name>ArticleListPage</name>
@@ -175,6 +179,45 @@
     </message>
 </context>
 <context>
+    <name>SettingsPage</name>
+    <message>
+        <source>Settings</source>
+        <translation>Einstellungen</translation>
+    </message>
+    <message>
+        <source>Account</source>
+        <translation>Konto</translation>
+    </message>
+    <message>
+        <source>Server</source>
+        <translation>Server</translation>
+    </message>
+    <message>
+        <source>User name</source>
+        <translation>Benutzername</translation>
+    </message>
+    <message>
+        <source>Last refresh</source>
+        <translation>Letzte Aktualisierung</translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation>Nie</translation>
+    </message>
+    <message>
+        <source>Log out</source>
+        <translation>Abmelden</translation>
+    </message>
+    <message>
+        <source>Logging out</source>
+        <translation>Abmelden</translation>
+    </message>
+    <message>
+        <source>Logging out removes the articles stored on this device; your feeds stay on the server. Changes that were not sent yet, for example while offline, are lost.</source>
+        <translation>Beim Abmelden werden die auf diesem Gerät gespeicherten Artikel entfernt; deine Feeds bleiben auf dem Server. Noch nicht gesendete Änderungen, etwa aus der Offline-Zeit, gehen verloren.</translation>
+    </message>
+</context>
+<context>
     <name>StreamListModel</name>
     <message>
         <source>All articles</source>
@@ -196,14 +239,6 @@
         <translation>Aktualisiert %1</translation>
     </message>
     <message>
-        <source>Log out</source>
-        <translation>Abmelden</translation>
-    </message>
-    <message>
-        <source>Logging out</source>
-        <translation>Abmelden</translation>
-    </message>
-    <message>
         <source>Refresh</source>
         <translation>Aktualisieren</translation>
     </message>
@@ -218,6 +253,10 @@
     <message>
         <source>Pull down to refresh</source>
         <translation>Zum Aktualisieren herunterziehen</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>Einstellungen</translation>
     </message>
 </context>
 </TS>

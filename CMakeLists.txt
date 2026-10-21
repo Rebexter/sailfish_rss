@@ -100,6 +100,7 @@ add_custom_target(distfiles
         qml/pages/ArticleListPage.qml
         qml/pages/ArticlePage.qml
         qml/pages/LoginPage.qml
+        qml/pages/SettingsPage.qml
         qml/pages/StreamsPage.qml
         rpm/harbour-sailrss.spec
         ${TsFiles})

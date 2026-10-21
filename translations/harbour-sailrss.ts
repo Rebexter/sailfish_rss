@@ -23,6 +23,10 @@
         <source>Storage error: %1</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Cannot save the session in the keychain: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ArticleListPage</name>
@@ -175,6 +179,45 @@
     </message>
 </context>
 <context>
+    <name>SettingsPage</name>
+    <message>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Last refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Never</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Log out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Logging out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Logging out removes the articles stored on this device; your feeds stay on the server. Changes that were not sent yet, for example while offline, are lost.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>StreamListModel</name>
     <message>
         <source>All articles</source>
@@ -196,14 +239,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Log out</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Logging out</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
@@ -217,6 +252,10 @@
     </message>
     <message>
         <source>Pull down to refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

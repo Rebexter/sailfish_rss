@@ -20,10 +20,6 @@ Page {
         folderId: page.folderId
     }
 
-    RemorsePopup {
-        id: remorse
-    }
-
     SilicaListView {
         id: list
 
@@ -48,8 +44,8 @@ Page {
 
             MenuItem {
                 visible: page.topLevel
-                text: qsTr("Log out")
-                onClicked: remorse.execute(qsTr("Logging out"), function() { app.logout() })
+                text: qsTr("Settings")
+                onClicked: pageStack.push(Qt.resolvedUrl("SettingsPage.qml"))
             }
 
             MenuItem {
