@@ -1,9 +1,11 @@
 #include "app/appcontroller.h"
 #include "app/articlelistmodel.h"
+#include "app/imagecache.h"
 #include "app/streamlistmodel.h"
 
 #include <QGuiApplication>
 #include <QQmlContext>
+#include <QQmlEngine>
 #include <QQuickView>
 #include <QScopedPointer>
 #include <QtQml>
@@ -26,7 +28,10 @@ int main(int argc, char *argv[])
     if (!controller.open())
         return 1;
 
+    // Declared before the view, so it outlives the QML engine using it.
+    ImageCacheFactory imageCache;
     QScopedPointer<QQuickView> view(SailfishApp::createView());
+    view->engine()->setNetworkAccessManagerFactory(&imageCache);
     view->rootContext()->setContextProperty(QStringLiteral("app"), &controller);
     view->setSource(SailfishApp::pathToMainQml());
     view->show();

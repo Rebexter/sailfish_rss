@@ -83,9 +83,12 @@ Each phase ends with something that can be checked on the phone.
 - Article list (unread only or all) with pull-to-refresh, mark all as read,
   and read/star from the context menu.
 - Article page: marked read on open, star, mark unread, open in browser.
-- Article rendering: Silica rich-text label. Images, scripts and embedded
-  content are removed for now; `Sailfish.WebView` (full HTML and images) is
-  still an option.
+- Article rendering: text in Silica rich-text labels, images as separate
+  QML Image blocks between them (rich text cannot scale images), scaled to
+  the page width. Scripts and styles are dropped, embedded iframes become a
+  link. Images go through a 100 MB disk cache and are taken from it first,
+  so images of articles opened before show offline. `Sailfish.WebView` was
+  tried and dropped: noticeably laggier than the native labels.
 - User actions are sent a few seconds after they happen (send-only sync);
   a full sync runs on start, on refresh and from the cover.
 - The session token (never the password) was stored in plain text in
@@ -98,7 +101,8 @@ Each phase ends with something that can be checked on the phone.
   (`Nemo.KeepAlive` BackgroundJob; off, 5, 15, 30 minutes, 1, 2 or 4 hours,
   default 30 minutes), plus a catch-up sync when the app returns to the
   foreground. Lists merge sync results in place and keep their scroll
-  position. Not yet verified with the phone locked.
+  position. Verified on a Jolla Phone: a sync ran while the phone was
+  locked and the app minimized.
 - New-article notifications (`Nemo.Notifications`).
 - Credential management ✅: the session token is kept in the system keychain
   (Sailfish Secrets, `Secrets` permission), in an encrypted collection only

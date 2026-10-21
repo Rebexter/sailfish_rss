@@ -5,7 +5,8 @@ Page {
     id: page
 
     property string articleId
-    readonly property var article: app.article(articleId, Theme.highlightColor.toString())
+    readonly property var article: app.article(articleId)
+    readonly property var blocks: app.articleBlocks(articleId, Theme.highlightColor.toString())
     property bool read: article.read === true
     property bool starred: article.starred === true
 
@@ -83,13 +84,58 @@ Page {
                 color: Theme.secondaryHighlightColor
             }
 
-            Label {
-                width: parent.width
-                text: page.article.html || ""
-                textFormat: Text.RichText
-                wrapMode: Text.Wrap
-                font.pixelSize: Theme.fontSizeSmall
-                onLinkActivated: Qt.openUrlExternally(link)
+            // Text and images, as split up by ArticleHtml::blocks()
+            Repeater {
+                model: page.blocks
+
+                delegate: Item {
+                    readonly property bool isImage: modelData.type === "image"
+
+                    width: column.width
+                    height: isImage ? imageBlock.height : textBlock.height
+
+                    Label {
+                        id: textBlock
+
+                        visible: !parent.isImage
+                        width: parent.width
+                        text: visible ? modelData.html : ""
+                        textFormat: Text.RichText
+                        wrapMode: Text.Wrap
+                        font.pixelSize: Theme.fontSizeSmall
+                        onLinkActivated: Qt.openUrlExternally(link)
+                    }
+
+                    Item {
+                        id: imageBlock
+
+                        // Hidden until loaded; offline, uncached images stay hidden.
+                        visible: parent.isImage && image.status === Image.Ready
+                        width: parent.width
+                        height: visible ? image.height + 2 * Theme.paddingSmall : 0
+
+                        Image {
+                            id: image
+
+                            // At most its own size, in CSS pixels like a browser,
+                            // and never wider than the page.
+                            y: Theme.paddingSmall
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: Math.min(implicitWidth * Theme.pixelRatio, parent.width)
+                            height: implicitWidth > 0 ? width * implicitHeight / implicitWidth : 0
+                            source: parent.parent.isImage ? modelData.image : ""
+                            asynchronous: true
+                            smooth: true
+                            fillMode: Image.PreserveAspectFit
+                        }
+
+                        MouseArea {
+                            anchors.fill: image
+                            enabled: !!modelData.link
+                            onClicked: Qt.openUrlExternally(modelData.link)
+                        }
+                    }
+                }
             }
         }
 

@@ -59,9 +59,11 @@ public:
     Q_INVOKABLE void setStarred(const QString &itemId, bool starred);
     Q_INVOKABLE void markAllRead(const QString &streamId, qint64 olderThanUsec);
 
-    // title, feedTitle, author, url, published, read, starred and html
-    // (prepared for Text.RichText, links in linkColor).
-    Q_INVOKABLE QVariantMap article(const QString &itemId, const QString &linkColor);
+    // id, title, feedTitle, author, url, published, read and starred.
+    Q_INVOKABLE QVariantMap article(const QString &itemId);
+    // The article content as a list of blocks: {type: "text", html} for
+    // Text.RichText (links in linkColor), {type: "image", image, link}.
+    Q_INVOKABLE QVariantList articleBlocks(const QString &itemId, const QString &linkColor);
 
 signals:
     void accountChanged();

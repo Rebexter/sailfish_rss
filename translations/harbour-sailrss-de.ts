@@ -29,6 +29,13 @@
     </message>
 </context>
 <context>
+    <name>ArticleHtml</name>
+    <message>
+        <source>Embedded content</source>
+        <translation>Eingebetteter Inhalt</translation>
+    </message>
+</context>
+<context>
     <name>ArticleListPage</name>
     <message>
         <source>Refreshing…</source>

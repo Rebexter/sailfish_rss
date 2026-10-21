@@ -1,5 +1,6 @@
 #include "appcontroller.h"
 
+#include "app/imagecache.h"
 #include "content/articlehtml.h"
 
 #include <QDir>
@@ -211,6 +212,7 @@ void AppController::logout()
     m_database.clear();
     m_settings->remove(LastSyncKey);
     m_settings->sync();
+    ImageCacheFactory::clear();
     forgetSession();
     setSyncError(QString());
     emit accountChanged();
@@ -324,7 +326,7 @@ void AppController::markAllRead(const QString &streamId, qint64 olderThanUsec)
     scheduleSend();
 }
 
-QVariantMap AppController::article(const QString &itemId, const QString &linkColor)
+QVariantMap AppController::article(const QString &itemId)
 {
     QVariantMap result;
     const std::optional<Database::StoredItem> item = m_database.item(itemId);
@@ -338,7 +340,27 @@ QVariantMap AppController::article(const QString &itemId, const QString &linkCol
     result.insert(QStringLiteral("published"), item->published);
     result.insert(QStringLiteral("read"), item->read);
     result.insert(QStringLiteral("starred"), item->starred);
-    result.insert(QStringLiteral("html"), ArticleHtml::forRichText(item->contentHtml, linkColor));
+    return result;
+}
+
+QVariantList AppController::articleBlocks(const QString &itemId, const QString &linkColor)
+{
+    QVariantList result;
+    const std::optional<Database::StoredItem> item = m_database.item(itemId);
+    if (!item)
+        return result;
+    for (const ArticleHtml::Block &block : ArticleHtml::blocks(item->contentHtml, QUrl(item->url), linkColor)) {
+        QVariantMap map;
+        if (block.type == ArticleHtml::Block::Type::Text) {
+            map.insert(QStringLiteral("type"), QStringLiteral("text"));
+            map.insert(QStringLiteral("html"), block.html);
+        } else {
+            map.insert(QStringLiteral("type"), QStringLiteral("image"));
+            map.insert(QStringLiteral("image"), block.image.toString());
+            map.insert(QStringLiteral("link"), block.link.toString());
+        }
+        result.append(map);
+    }
     return result;
 }
 

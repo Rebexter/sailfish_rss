@@ -35,6 +35,8 @@ add_executable(harbour-sailrss
     src/app/appcontroller.h
     src/app/articlelistmodel.cpp
     src/app/articlelistmodel.h
+    src/app/imagecache.cpp
+    src/app/imagecache.h
     src/app/keychain.cpp
     src/app/keychain.h
     src/app/streamlistmodel.cpp
