@@ -78,14 +78,21 @@ Each phase ends with something that can be checked on the phone.
 - Done when: a sync fills the database and toggling read state survives being
   offline.
 
-### 3. Core UI
-- Login page with a connection check.
-- Category and feed list with unread counts.
-- Article list with pull-to-refresh and mark all as read.
-- Article page: mark read on open, star, open in browser.
-- Article rendering: Silica rich-text label (basic HTML only), or
-  `Sailfish.WebView` (full HTML and images, more memory). Both are allowed in
-  Harbour.
+### 3. Core UI ✅
+- Login page with a connection check; the server address is accepted as
+  users know it.
+- Folder list with "All articles" and "Starred", feeds per folder, unread
+  counts.
+- Article list (unread only or all) with pull-to-refresh, mark all as read,
+  and read/star from the context menu.
+- Article page: marked read on open, star, mark unread, open in browser.
+- Article rendering: Silica rich-text label. Images, scripts and embedded
+  content are removed for now; `Sailfish.WebView` (full HTML and images) is
+  still an option.
+- User actions are sent a few seconds after they happen (send-only sync);
+  a full sync runs on start, on refresh and from the cover.
+- **Temporary:** the session token (never the password) is stored in plain
+  text in the app's sandboxed `settings.ini` until Phase 4.
 - Done when: reading feeds works day to day.
 
 ### 4. Sailfish integration
@@ -94,13 +101,15 @@ Each phase ends with something that can be checked on the phone.
 - New-article notifications (`Nemo.Notifications`).
 - Proper credential management: the login page stores the server URL and
   user, and the API password goes in the system keychain (`Sailfish.Secrets`,
-  adds the `Secrets` permission). Remove the `SAILRSS_*` environment variable
-  test path from Phase 1 at the same time.
+  adds the `Secrets` permission). Move the session token out of
+  `settings.ini` into the keychain too, and remove the `SAILRSS_*`
+  environment variable test path from Phase 1 at the same time.
 - Share (`Sailfish.Share`), settings page, translations.
 
 ### 5. Release
 - Stripped release build, real icon, store description and screenshots.
-- Check that no `SAILRSS_*` environment variable handling is left in the app.
+- Check that no `SAILRSS_*` environment variable handling is left in the app,
+  and that no token is stored in `settings.ini`.
 - Harbour validator clean, then submit to the Jolla Store.
 
 ### Later

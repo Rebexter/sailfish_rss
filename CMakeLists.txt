@@ -19,6 +19,8 @@ add_library(sailrss-core STATIC
     src/api/greaderparser.cpp
     src/api/greaderparser.h
     src/api/greadertypes.h
+    src/content/articlehtml.cpp
+    src/content/articlehtml.h
     src/storage/database.cpp
     src/storage/database.h
     src/sync/syncmanager.cpp
@@ -27,7 +29,15 @@ add_library(sailrss-core STATIC
 target_include_directories(sailrss-core PUBLIC src)
 target_link_libraries(sailrss-core PUBLIC Qt5::Core Qt5::Network Qt5::Sql)
 
-add_executable(harbour-sailrss src/harbour-sailrss.cpp)
+add_executable(harbour-sailrss
+    src/app/appcontroller.cpp
+    src/app/appcontroller.h
+    src/app/articlelistmodel.cpp
+    src/app/articlelistmodel.h
+    src/app/streamlistmodel.cpp
+    src/app/streamlistmodel.h
+    src/harbour-sailrss.cpp
+)
 target_compile_definitions(harbour-sailrss PRIVATE
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
 )
@@ -37,6 +47,7 @@ target_include_directories(harbour-sailrss PRIVATE
 >)
 target_link_libraries(harbour-sailrss
     sailrss-core
+    Qt5::Qml
     Qt5::Quick
     ${SAILFISH_LDFLAGS}
 )
@@ -81,7 +92,10 @@ add_custom_target(distfiles
         harbour-sailrss.desktop
         qml/harbour-sailrss.qml
         qml/cover/CoverPage.qml
-        qml/pages/MainPage.qml
+        qml/pages/ArticleListPage.qml
+        qml/pages/ArticlePage.qml
+        qml/pages/LoginPage.qml
+        qml/pages/StreamsPage.qml
         rpm/harbour-sailrss.spec
         ${TsFiles})
 
