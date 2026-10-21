@@ -1,19 +1,8 @@
-# sfdk build output (in-tree builds)
-/RPMS/
+# Out-of-tree builds (scripts/dev.sh builds into build/<arch>)
 /build/
-/build-*/
-/CMakeFiles/
-/CMakeCache.txt
-/cmake_install.cmake
-/Makefile
-/QtCreatorDeployment.txt
-/harbour-sailrss
-/*.qm
-/translations/*.qm
-/*_autogen/
-/.sfdk/
-/documentation.list
-/install_manifest.txt
+
+# Core dumps from running target binaries under emulation
+qemu_*.core
 
 # Qt Creator
 *.user

@@ -1,0 +1,19 @@
+{
+	"tags": [
+		{
+			"id": "user/-/state/com.google/starred"
+		},
+		{
+			"id": "user/-/state/com.google/reading-list"
+		},
+		{
+			"id": "user/-/label/Sailfish",
+			"type": "folder"
+		},
+		{
+			"id": "user/-/label/Read later",
+			"type": "tag",
+			"unread_count": 3
+		}
+	]
+}

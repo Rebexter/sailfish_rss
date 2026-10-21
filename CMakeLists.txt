@@ -12,6 +12,17 @@ pkg_search_module(SAILFISH sailfishapp REQUIRED)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# Code shared by the app and the tests
+add_library(sailrss-core STATIC
+    src/api/greaderclient.cpp
+    src/api/greaderclient.h
+    src/api/greaderparser.cpp
+    src/api/greaderparser.h
+    src/api/greadertypes.h
+)
+target_include_directories(sailrss-core PUBLIC src)
+target_link_libraries(sailrss-core PUBLIC Qt5::Core Qt5::Network)
+
 add_executable(harbour-sailrss src/harbour-sailrss.cpp)
 target_compile_definitions(harbour-sailrss PRIVATE
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
@@ -21,9 +32,15 @@ target_include_directories(harbour-sailrss PRIVATE
     ${SAILFISH_INCLUDE_DIRS}
 >)
 target_link_libraries(harbour-sailrss
+    sailrss-core
     Qt5::Quick
     ${SAILFISH_LDFLAGS}
 )
+
+include(CTest)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 
 install(TARGETS harbour-sailrss
     RUNTIME DESTINATION bin

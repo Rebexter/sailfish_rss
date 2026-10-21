@@ -11,6 +11,8 @@ BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
+BuildRequires:  pkgconfig(Qt5Network)
+BuildRequires:  pkgconfig(Qt5Test)
 BuildRequires:  qt5-qttools-linguist
 BuildRequires:  desktop-file-utils
 BuildRequires:  cmake
@@ -28,6 +30,10 @@ using the Google Reader compatible API.
 %cmake .
 
 %make_build
+
+
+%check
+ctest --output-on-failure
 
 
 %install

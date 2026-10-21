@@ -1,0 +1,20 @@
+{
+	"max": 18,
+	"unreadcounts": [
+		{
+			"id": "feed/2",
+			"count": 8,
+			"newestItemTimestampUsec": "1792608449293849"
+		},
+		{
+			"id": "user/-/label/Sailfish",
+			"count": 8,
+			"newestItemTimestampUsec": "1792608449293849"
+		},
+		{
+			"id": "user/-/state/com.google/reading-list",
+			"count": 18,
+			"newestItemTimestampUsec": "1792608449293849"
+		}
+	]
+}

@@ -47,7 +47,7 @@ Each phase ends with something that can be checked on the phone.
 - Done when: the empty app builds, passes the Harbour validator, deploys and
   launches.
 
-### 1. API client (C++, no UI)
+### 1. API client (C++, no UI) ✅
 - Log in with the FreshRSS API password and get an auth token.
 - Fetch subscriptions, tags and unread counts.
 - Fetch articles in pages, using the continuation token and a "since"
@@ -55,6 +55,9 @@ Each phase ends with something that can be checked on the phone.
 - Mark items read or starred, mark all as read.
 - Unit tests against saved JSON responses; manual tests against a local
   FreshRSS in Podman (`freshrss/freshrss`) and the real server.
+- Test credentials come from the environment variables `SAILRSS_URL`,
+  `SAILRSS_USER` and `SAILRSS_PASSWORD`. **This is for development only**:
+  remove it in Phase 4, when real credential storage replaces it.
 - Done when: tests pass against the local FreshRSS.
 
 ### 2. Storage and sync
@@ -79,12 +82,15 @@ Each phase ends with something that can be checked on the phone.
 - Cover with unread count.
 - Background refresh while the app is open (`Nemo.KeepAlive`).
 - New-article notifications (`Nemo.Notifications`).
-- Password in the system keychain (`Sailfish.Secrets`, adds the `Secrets`
-  permission).
+- Proper credential management: the login page stores the server URL and
+  user, and the API password goes in the system keychain (`Sailfish.Secrets`,
+  adds the `Secrets` permission). Remove the `SAILRSS_*` environment variable
+  test path from Phase 1 at the same time.
 - Share (`Sailfish.Share`), settings page, translations.
 
 ### 5. Release
 - Stripped release build, real icon, store description and screenshots.
+- Check that no `SAILRSS_*` environment variable handling is left in the app.
 - Harbour validator clean, then submit to the Jolla Store.
 
 ### Later

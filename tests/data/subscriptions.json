@@ -1,0 +1,32 @@
+{
+	"subscriptions": [
+		{
+			"id": "feed/2",
+			"title": "Sailing News",
+			"categories": [
+				{
+					"id": "user/-/label/Sailfish",
+					"label": "Sailfish"
+				}
+			],
+			"url": "https://news.example.org/feed/",
+			"htmlUrl": "https://news.example.org/",
+			"iconUrl": "https://rss.example.net/f.php?h=efdffc6f",
+			"frss:priority": "main"
+		},
+		{
+			"id": "feed/1",
+			"title": "Café & Code",
+			"categories": [
+				{
+					"id": "user/-/label/Uncategorized",
+					"label": "Uncategorized"
+				}
+			],
+			"url": "https://code.example.com/releases.atom",
+			"htmlUrl": "https://code.example.com/",
+			"iconUrl": "https://rss.example.net/f.php?h=d8277be0",
+			"frss:priority": "main"
+		}
+	]
+}

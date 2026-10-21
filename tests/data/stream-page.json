@@ -1,0 +1,10 @@
+{
+	"id": "user/-/state/com.google/reading-list",
+	"updated": 1792608469,
+	"items": [
+{"id":"tag:google.com,2005:reader/item/00065e5e2dd76e18","crawlTimeMsec":"1792608449293","timestampUsec":"1792608449293848","published":1740414037,"title":"Release 5.0 is here","canonical":[{"href":"https://news.example.org/release-5-0/"}],"alternate":[{"href":"https://news.example.org/release-5-0/"}],"categories":["user/-/state/com.google/reading-list","user/-/label/Sailfish","user/-/state/org.freshrss/main","user/-/state/com.google/read","user/-/state/com.google/starred","Community","Releases","user/-/label/Read later"],"origin":{"streamId":"feed/2","htmlUrl":"https://news.example.org/","title":"Sailing News"},"summary":{"content":"<p><b>A new release</b> is out.</p>"},"enclosure":[{"href":"https://news.example.org/podcast.mp3","type":"audio/mpeg","length":123456},{"href":""}],"author":"Jane Sailor"},
+{"id":"tag:google.com,2005:reader/item/00065e5e2dd76e17","crawlTimeMsec":"1792608449293","timestampUsec":"1792608449293847","published":1738852275,"title":"Community news","canonical":[{"href":"https://news.example.org/canonical-only/"}],"categories":["user/-/state/com.google/reading-list","user/-/label/Sailfish"],"origin":{"streamId":"feed/2","htmlUrl":"https://news.example.org/","title":"Sailing News"},"content":{"content":"<p>Full content.</p>"}},
+{"id":"not-a-valid-id","title":"Skipped","categories":[]}
+	],
+	"continuation": "1792608449293847"
+}
