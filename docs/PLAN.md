@@ -68,13 +68,17 @@ Each phase ends with something that can be checked on the phone.
   so late-published articles are included), then set read and starred state
   from the server's complete unread and starred ID lists. The `ot` filter
   does not report state changes, so this reconciliation is needed.
-- History window (600 days): the first sync fetches that far back;
-  starred articles are always fetched, however old.
+- History window, Settings → Storage → "Maximum article age" (1 week,
+  1 month, 3 months, 1 year, 2 years or no limit; default 2 years, by
+  arrival): the first sync fetches that far back; a longer window fetches
+  the older articles once on the next sync. Starred articles are always
+  fetched, however old.
 - Read, unstarred articles are deleted after a time set in Settings → Storage
   (1 day, 1 week, 1 month, 1 year or forever; default 1 month), counted from
-  when they were read (database schema 2 records this; articles read
-  elsewhere count from the sync that noticed it). Unread and starred
-  articles are never deleted.
+  when they were read (database schema 2 records this; articles that
+  become read elsewhere count from the sync that noticed it, and articles
+  already read when first downloaded count from their arrival, schema 3).
+  Unread and starred articles are never deleted.
 - Not stored yet: user labels and enclosures (podcasts, images).
 - Done when: a sync fills the database and toggling read state survives being
   offline.
@@ -107,7 +111,11 @@ Each phase ends with something that can be checked on the phone.
   foreground. Lists merge sync results in place and keep their scroll
   position. Verified on a Jolla Phone: a sync ran while the phone was
   locked and the app minimized.
-- New-article notifications (`Nemo.Notifications`).
+- New-article notifications (`Nemo.Notifications`): after a sync in the
+  background, one summary notification counts the unread articles that
+  arrived since the app was last in the foreground; later syncs update it,
+  opening the app clears it. Tapping it activates the app through its
+  D-Bus name. Setting under Refresh, on by default.
 - Credential management ✅: the session token is kept in the system keychain
   (Sailfish Secrets, `Secrets` permission), in an encrypted collection only
   the app can read; tokens left in `settings.ini` by earlier versions move
@@ -115,7 +123,7 @@ Each phase ends with something that can be checked on the phone.
   taking real credentials from the environment and use only the local test
   server.
 - Settings page ✅ (refresh interval, account, log out).
-- Share (`Sailfish.Share`), translations.
+- Share link from the article page (`Sailfish.Share`), translations.
 
 ### 5. Release
 - Stripped release build, real icon, store description and screenshots.

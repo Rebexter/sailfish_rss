@@ -20,6 +20,13 @@ const QString LastSyncKey = QStringLiteral("sync/lastSync");
 const QString RefreshIntervalKey = QStringLiteral("sync/refreshInterval");
 const int DefaultRefreshInterval = 30;
 const QString OldestFirstKey = QStringLiteral("view/oldestFirst");
+const QString NotifyKey = QStringLiteral("notifications/newArticles");
+// Arrival time (µs) after which unread articles count as new
+const QString SeenUntilKey = QStringLiteral("notifications/seenUntil");
+const QString HistoryDaysKey = QStringLiteral("sync/historyDays");
+const int DefaultHistoryDays = 730;
+// Before the setting existed, the download window was fixed at this.
+const int FormerHistoryDays = 600;
 const QString ReadRetentionKey = QStringLiteral("storage/readRetention");
 const int DefaultReadRetention = 30;
 
@@ -72,6 +79,14 @@ bool AppController::open()
             qWarning("Cannot move the session token to the keychain: %s", qPrintable(m_keychain.lastError()));
         }
         token = legacyToken;
+    }
+
+    // Installs from before the setting downloaded 600 days; the longer
+    // default needs one full download to fill the gap.
+    if (!m_settings->contains(HistoryDaysKey)) {
+        if (DefaultHistoryDays > FormerHistoryDays)
+            m_sync.resetIncrementalSync();
+        m_settings->setValue(HistoryDaysKey, DefaultHistoryDays);
     }
 
     const QString apiUrl = m_settings->value(ApiUrlKey).toString();
@@ -161,6 +176,56 @@ void AppController::setOldestFirst(bool oldestFirst)
         return;
     m_settings->setValue(OldestFirstKey, oldestFirst);
     emit oldestFirstChanged();
+}
+
+bool AppController::notifyNewArticles() const
+{
+    return !m_settings || m_settings->value(NotifyKey, true).toBool();
+}
+
+void AppController::setNotifyNewArticles(bool notify)
+{
+    if (!m_settings || notify == notifyNewArticles())
+        return;
+    m_settings->setValue(NotifyKey, notify);
+    emit notifyNewArticlesChanged();
+}
+
+QVariantMap AppController::newArticles()
+{
+    QVariantMap result;
+    // Before the app was ever seen (first sync), nothing counts as new.
+    const qint64 seenUntil = m_settings ? m_settings->value(SeenUntilKey).toLongLong() : 0;
+    const Database::NewItems items = seenUntil > 0 ? m_database.newUnreadItems(seenUntil) : Database::NewItems();
+    result.insert(QStringLiteral("count"), items.count);
+    result.insert(QStringLiteral("newestTitle"), items.newestTitle);
+    return result;
+}
+
+void AppController::markArticlesSeen()
+{
+    if (m_settings)
+        m_settings->setValue(SeenUntilKey, QDateTime::currentMSecsSinceEpoch() * 1000);
+}
+
+int AppController::historyDays() const
+{
+    return m_settings ? m_settings->value(HistoryDaysKey, DefaultHistoryDays).toInt() : DefaultHistoryDays;
+}
+
+void AppController::setHistoryDays(int days)
+{
+    const int old = historyDays();
+    if (!m_settings || days == old)
+        return;
+    m_settings->setValue(HistoryDaysKey, qMax(0, days));
+    emit historyDaysChanged();
+
+    // A longer window (0 is unlimited) needs the older articles once; a
+    // shorter one only limits what is downloaded from now on.
+    const bool longer = old > 0 && (days <= 0 || days > old);
+    if (longer && m_sync.resetIncrementalSync())
+        sync();
 }
 
 int AppController::readRetention() const
@@ -266,6 +331,7 @@ void AppController::sync()
         return;
     }
     m_sendTimer.stop();  // the full sync sends pending actions first
+    m_sync.setHistoryDays(historyDays());
     m_sync.setReadRetentionDays(readRetention());
     m_fullSyncRunning = true;
     emit syncingChanged();

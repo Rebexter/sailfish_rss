@@ -47,8 +47,34 @@ Page {
                 onCurrentIndexChanged: app.refreshInterval = intervals[currentIndex]
             }
 
+            TextSwitch {
+                text: qsTr("Notify about new articles")
+                description: qsTr("After a refresh while SailRSS is in the background")
+                checked: app.notifyNewArticles
+                onCheckedChanged: app.notifyNewArticles = checked
+            }
+
             SectionHeader {
                 text: qsTr("Storage")
+            }
+
+            ComboBox {
+                // Days, matching the menu entries; 0 is no limit
+                readonly property var windows: [7, 30, 90, 365, 730, 0]
+
+                width: parent.width
+                label: qsTr("Maximum article age")
+                description: qsTr("Older articles are not downloaded, counted from when they arrived on the server. Starred articles are always downloaded. A longer time downloads the older articles on the next refresh.")
+                currentIndex: Math.max(0, windows.indexOf(app.historyDays))
+                menu: ContextMenu {
+                    MenuItem { text: qsTr("1 week") }
+                    MenuItem { text: qsTr("1 month") }
+                    MenuItem { text: qsTr("3 months") }
+                    MenuItem { text: qsTr("1 year") }
+                    MenuItem { text: qsTr("2 years") }
+                    MenuItem { text: qsTr("No limit") }
+                }
+                onCurrentIndexChanged: app.historyDays = windows[currentIndex]
             }
 
             ComboBox {
@@ -57,7 +83,7 @@ Page {
 
                 width: parent.width
                 label: qsTr("Keep read articles")
-                description: qsTr("Counted from when an article arrived. Unread and starred articles are always kept.")
+                description: qsTr("Counted from when an article was read. Unread and starred articles are always kept.")
                 currentIndex: Math.max(0, retentions.indexOf(app.readRetention))
                 menu: ContextMenu {
                     MenuItem { text: qsTr("1 day") }

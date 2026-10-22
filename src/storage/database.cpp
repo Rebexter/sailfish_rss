@@ -11,7 +11,7 @@ using Kind = Database::PendingAction::Kind;
 
 namespace {
 
-const int SchemaVersion = 2;
+const int SchemaVersion = 3;
 
 // Each version's statements; a new database runs all of them, an older one
 // the versions it lacks.
@@ -63,6 +63,16 @@ const char *const SchemaVersion2[] = {
     "CREATE TRIGGER items_read_at_update AFTER UPDATE OF read ON items WHEN NEW.read != OLD.read "
     "BEGIN UPDATE items SET read_at = CASE WHEN NEW.read = 1 THEN CAST(strftime('%s', 'now') AS INTEGER) END "
     "WHERE id = NEW.id; END",
+};
+
+// An article that is already read when it first arrives was read elsewhere
+// at an unknown time; take its arrival rather than now, so old read
+// articles fetched again (first sync, longer download window) expire right
+// away instead of staying for the whole retention time.
+const char *const SchemaVersion3[] = {
+    "DROP TRIGGER items_read_at_insert",
+    "CREATE TRIGGER items_read_at_insert AFTER INSERT ON items WHEN NEW.read = 1 "
+    "BEGIN UPDATE items SET read_at = NEW.crawled_usec / 1000000 WHERE id = NEW.id; END",
 };
 
 QString kindName(Kind kind)
@@ -188,6 +198,8 @@ bool Database::upgrade(int fromVersion)
     if (fromVersion < 1 && !run(SchemaVersion1))
         return false;
     if (fromVersion < 2 && !run(SchemaVersion2))
+        return false;
+    if (fromVersion < 3 && !run(SchemaVersion3))
         return false;
     if (!exec(QStringLiteral("PRAGMA user_version = %1").arg(SchemaVersion)))
         return false;
@@ -572,6 +584,23 @@ QString Database::feedTitle(const QString &feedId)
         return QString();
     }
     return query.next() ? query.value(0).toString() : QString();
+}
+
+Database::NewItems Database::newUnreadItems(qint64 arrivedAfterUsec)
+{
+    NewItems result;
+    QSqlQuery query(m_db);
+    query.prepare(QStringLiteral(
+        "WITH new AS (SELECT title, crawled_usec FROM items WHERE read = 0 AND crawled_usec > ?) "
+        "SELECT COUNT(*), (SELECT title FROM new ORDER BY crawled_usec DESC LIMIT 1) FROM new"));
+    query.addBindValue(arrivedAfterUsec);
+    if (!query.exec() || !query.next()) {
+        m_error = query.lastError().text();
+        return result;
+    }
+    result.count = query.value(0).toInt();
+    result.newestTitle = query.value(1).toString();
+    return result;
 }
 
 int Database::starredCount()

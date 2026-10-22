@@ -140,6 +140,10 @@
         <source>Mark as read</source>
         <translation>Als gelesen markieren</translation>
     </message>
+    <message>
+        <source>Share link</source>
+        <translation>Link teilen</translation>
+    </message>
 </context>
 <context>
     <name>CoverPage</name>
@@ -300,10 +304,6 @@
         <translation>Gelesene Artikel behalten</translation>
     </message>
     <message>
-        <source>Counted from when an article arrived. Unread and starred articles are always kept.</source>
-        <translation>Gezählt ab dem Eintreffen eines Artikels. Ungelesene und mit Stern markierte Artikel werden immer behalten.</translation>
-    </message>
-    <message>
         <source>1 day</source>
         <translation>1 Tag</translation>
     </message>
@@ -322,6 +322,38 @@
     <message>
         <source>Forever</source>
         <translation>Für immer</translation>
+    </message>
+    <message>
+        <source>Counted from when an article was read. Unread and starred articles are always kept.</source>
+        <translation>Gezählt ab dem Lesen eines Artikels. Ungelesene und mit Stern markierte Artikel werden immer behalten.</translation>
+    </message>
+    <message>
+        <source>Notify about new articles</source>
+        <translation>Über neue Artikel benachrichtigen</translation>
+    </message>
+    <message>
+        <source>After a refresh while SailRSS is in the background</source>
+        <translation>Nach einer Aktualisierung, während SailRSS im Hintergrund ist</translation>
+    </message>
+    <message>
+        <source>3 months</source>
+        <translation>3 Monate</translation>
+    </message>
+    <message>
+        <source>2 years</source>
+        <translation>2 Jahre</translation>
+    </message>
+    <message>
+        <source>Maximum article age</source>
+        <translation>Maximales Artikelalter</translation>
+    </message>
+    <message>
+        <source>Older articles are not downloaded, counted from when they arrived on the server. Starred articles are always downloaded. A longer time downloads the older articles on the next refresh.</source>
+        <translation>Ältere Artikel werden nicht heruntergeladen, gezählt ab ihrem Eintreffen auf dem Server. Mit Stern markierte Artikel werden immer heruntergeladen. Bei einem längeren Zeitraum werden die älteren Artikel bei der nächsten Aktualisierung geladen.</translation>
+    </message>
+    <message>
+        <source>No limit</source>
+        <translation>Keine Grenze</translation>
     </message>
 </context>
 <context>
@@ -364,6 +396,16 @@
     <message>
         <source>Settings</source>
         <translation>Einstellungen</translation>
+    </message>
+</context>
+<context>
+    <name>harbour-sailrss</name>
+    <message numerus="yes">
+        <source>%n new articles</source>
+        <translation>
+            <numerusform>%n neuer Artikel</numerusform>
+            <numerusform>%n neue Artikel</numerusform>
+        </translation>
     </message>
 </context>
 </TS>

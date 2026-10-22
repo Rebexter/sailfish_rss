@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Sailfish.Share 1.0
 
 Page {
     id: page
@@ -28,6 +29,14 @@ Page {
         }
     }
 
+    // The same link format as the Sailfish browser
+    ShareAction {
+        id: shareAction
+
+        title: qsTr("Share link")
+        mimeType: "text/x-url"
+    }
+
     SilicaFlickable {
         anchors.fill: parent
         // Room to scroll the last lines up to the middle of the screen
@@ -38,6 +47,18 @@ Page {
                 text: qsTr("Open in browser")
                 enabled: !!page.article.url
                 onClicked: Qt.openUrlExternally(page.article.url)
+            }
+            MenuItem {
+                text: qsTr("Share link")
+                visible: !!page.article.url
+                onClicked: {
+                    shareAction.resources = [{
+                        "type": "text/x-url",
+                        "linkTitle": page.article.title,
+                        "status": page.article.url
+                    }]
+                    shareAction.trigger()
+                }
             }
             MenuItem {
                 text: page.starred ? qsTr("Remove star") : qsTr("Star")

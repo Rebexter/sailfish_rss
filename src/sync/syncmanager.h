@@ -10,7 +10,7 @@
 //  1. send pending actions (in order; stops if offline, nothing is lost)
 //  2. replace the feed list
 //  3. fetch articles that are new or changed since the last sync, at most
-//     historyDays back
+//     historyDays back (no limit if 0)
 //  4. set read and starred state from the server's complete ID lists
 //  5. fetch starred articles that are not stored yet, however old
 //  6. delete read, unstarred articles read more than readRetentionDays ago
@@ -36,8 +36,11 @@ public:
 
     SyncManager(GReader::Client *client, Database *database, QObject *parent = nullptr);
 
-    // How far back articles are fetched.
+    // How far back articles are fetched, by arrival; 0 is no limit.
     void setHistoryDays(int days);
+    // The next sync fetches the whole history window again, e.g. after
+    // the window was made longer.
+    bool resetIncrementalSync();
     // How long read, unstarred articles are kept after being read; 0 keeps
     // them forever.
     void setReadRetentionDays(int days);
@@ -80,8 +83,10 @@ private:
 
     GReader::Client *m_client;
     Database *m_database;
-    int m_historyDays = 600;
+    int m_historyDays = 730;
     int m_readRetentionDays = 30;
+    // Reset requested while a sync was running: it must not save its time.
+    bool m_resetPending = false;
     bool m_syncing = false;
     ErrorKind m_errorKind = ErrorKind::None;
     QString m_errorMessage;

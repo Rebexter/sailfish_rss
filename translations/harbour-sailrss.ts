@@ -140,6 +140,10 @@
         <source>Mark as read</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Share link</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CoverPage</name>
@@ -300,10 +304,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Counted from when an article arrived. Unread and starred articles are always kept.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>1 day</source>
         <translation type="unfinished"></translation>
     </message>
@@ -321,6 +321,38 @@
     </message>
     <message>
         <source>Forever</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Counted from when an article was read. Unread and starred articles are always kept.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Notify about new articles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>After a refresh while SailRSS is in the background</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>3 months</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>2 years</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum article age</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Older articles are not downloaded, counted from when they arrived on the server. Starred articles are always downloaded. A longer time downloads the older articles on the next refresh.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No limit</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -364,6 +396,16 @@
     <message>
         <source>Settings</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>harbour-sailrss</name>
+    <message numerus="yes">
+        <source>%n new articles</source>
+        <translation>
+            <numerusform>%n new article</numerusform>
+            <numerusform>%n new articles</numerusform>
+        </translation>
     </message>
 </context>
 </TS>

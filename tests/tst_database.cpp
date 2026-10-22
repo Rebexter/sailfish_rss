@@ -348,6 +348,18 @@ private slots:
         QVERIFY(m_db->syncState("lastSyncTime").isEmpty());
     }
 
+    void newUnreadItems()
+    {
+        fill();  // unread: 100, 101, 103, 200, 201
+        const auto after101 = m_db->newUnreadItems(101);
+        QCOMPARE(after101.count, 3);  // 103, 200, 201
+        QCOMPARE(after101.newestTitle, QStringLiteral("Item 201"));
+        QVERIFY(m_db->setRead("201", true));
+        QCOMPARE(m_db->newUnreadItems(101).newestTitle, QStringLiteral("Item 200"));
+        QCOMPARE(m_db->newUnreadItems(1000).count, 0);
+        QVERIFY(m_db->newUnreadItems(1000).newestTitle.isEmpty());
+    }
+
     void missingItemIds()
     {
         fill();
@@ -358,7 +370,7 @@ private slots:
     {
         fill();
         QVERIFY(readAt(100).isNull());                     // unread
-        QVERIFY(qAbs(readAt(102).toLongLong() - now()) <= 5);  // inserted as read
+        QCOMPARE(readAt(102).toLongLong(), Q_INT64_C(0));  // first seen read: its arrival (102 µs)
         QVERIFY(m_db->setRead("100", true));
         QVERIFY(qAbs(readAt(100).toLongLong() - now()) <= 5);
         QVERIFY(m_db->setRead("100", false));
@@ -394,6 +406,21 @@ private slots:
         QVERIFY(m_db->item("201").has_value());  // read recently
     }
 
+    void readArticlesFromServerCountFromArrival()
+    {
+        fill();
+        Item old = item(300, "feed/1", true);
+        old.crawledUsec = (now() - 90 * 24 * 3600) * Q_INT64_C(1000000);  // 90 days ago
+        QVERIFY(m_db->upsertItems({old}));
+        QCOMPARE(readAt(300).toLongLong(), old.crawledUsec / 1000000);
+        // So a 30-day retention deletes it at once, like 102 (read from the
+        // start, arrived in 1970).
+        QCOMPARE(m_db->deleteExpired(now() - 30 * 24 * 3600), 2);
+        QVERIFY(!m_db->item("300").has_value());
+        QVERIFY(!m_db->item("102").has_value());
+        QVERIFY(m_db->item("100").has_value());  // unread
+    }
+
     void upgradesVersion1()
     {
         m_db.reset();
@@ -409,7 +436,7 @@ private slots:
 
         m_db.reset(new Database);
         QVERIFY2(m_db->open(path()), qPrintable(m_db->lastError()));
-        QCOMPARE(raw("PRAGMA user_version").toInt(), 2);
+        QCOMPARE(raw("PRAGMA user_version").toInt(), 3);
         // Already read: counted from the upgrade, so nothing is deleted at once.
         QVERIFY(qAbs(readAt(1).toLongLong() - now()) <= 5);
         QVERIFY(readAt(2).isNull());

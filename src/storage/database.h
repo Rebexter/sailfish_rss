@@ -118,6 +118,13 @@ public:
     int itemCount();
     int feedCount();
     int starredCount();
+
+    // Unread items that arrived after the given time, for notifications.
+    struct NewItems {
+        int count = 0;
+        QString newestTitle;
+    };
+    NewItems newUnreadItems(qint64 arrivedAfterUsec);
     int unreadCount(const QString &streamId);
 
     // Deletes everything, e.g. when logging out.

@@ -36,6 +36,12 @@ void SyncManager::setHistoryDays(int days)
     m_historyDays = days;
 }
 
+bool SyncManager::resetIncrementalSync()
+{
+    m_resetPending = m_syncing;
+    return m_database->setSyncState(LastSyncKey, QString());
+}
+
 void SyncManager::setReadRetentionDays(int days)
 {
     m_readRetentionDays = days;
@@ -77,6 +83,7 @@ void SyncManager::start(bool sendOnly)
         return;
     m_syncing = true;
     m_sendOnly = sendOnly;
+    m_resetPending = false;  // a reset before this sync is in the database already
     m_errorKind = ErrorKind::None;
     m_errorMessage.clear();
     m_stats = Stats();
@@ -84,7 +91,7 @@ void SyncManager::start(bool sendOnly)
     m_unreadIds.clear();
     m_starredIds.clear();
 
-    const qint64 windowStart = nowSecs() - qint64(m_historyDays) * 24 * 3600;
+    const qint64 windowStart = m_historyDays > 0 ? nowSecs() - qint64(m_historyDays) * 24 * 3600 : 0;
     const qint64 lastSync = m_database->syncState(LastSyncKey).toLongLong();
     m_since = qMax(windowStart, lastSync - SyncOverlapSecs);
 
@@ -245,9 +252,13 @@ void SyncManager::cleanUp()
         m_stats.deleted = deleted;
     }
 
-    const qint64 syncTime = m_serverTime > 0 ? m_serverTime : nowSecs();
-    if (!checkStorage(m_database->setSyncState(LastSyncKey, QString::number(syncTime))))
-        return;
+    if (m_resetPending) {
+        m_resetPending = false;  // the next sync starts from scratch
+    } else {
+        const qint64 syncTime = m_serverTime > 0 ? m_serverTime : nowSecs();
+        if (!checkStorage(m_database->setSyncState(LastSyncKey, QString::number(syncTime))))
+            return;
+    }
     finish(ErrorKind::None, QString());
 }
 

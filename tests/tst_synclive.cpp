@@ -9,6 +9,8 @@
 
 #include <QEventLoop>
 #include <QSignalSpy>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QTemporaryDir>
 #include <QTimer>
 #include <QtTest>
@@ -124,16 +126,6 @@ private slots:
 
     void starredOutsideWindowAreFetched()
     {
-        // With no history window, starred articles can only arrive through
-        // the separate fetch of missing starred items.
-        QTemporaryDir dir;
-        Database db;
-        QVERIFY2(db.open(dir.path() + QStringLiteral("/window.sqlite")), qPrintable(db.lastError()));
-        SyncManager sync(&m_client, &db);
-        sync.setHistoryDays(0);
-        QVERIFY(runSync(&sync));
-
-        qInfo("zero-day window stored %d articles", db.itemCount());
         ItemIdsPage ids;
         StreamQuery query;
         query.streamId = StreamId::Starred;
@@ -142,6 +134,32 @@ private slots:
             [&](const Client::ResultCallback<ItemIdsPage> &done) { m_client.fetchItemIds(query, done); }, &ids));
         if (ids.ids.isEmpty())
             QSKIP("No starred articles on the server");
+
+        QTemporaryDir dir;
+        const QString path = dir.path() + QStringLiteral("/window.sqlite");
+        Database db;
+        QVERIFY2(db.open(path), qPrintable(db.lastError()));
+        SyncManager sync(&m_client, &db);
+        QVERIFY(runSync(&sync));
+
+        // Remove the starred articles and move the last sync into the
+        // future, so the next sync's article fetch returns nothing: they can
+        // only come back through the separate fetch of missing starred items.
+        {
+            QSqlDatabase raw = QSqlDatabase::addDatabase("QSQLITE", "raw");
+            raw.setDatabaseName(path);
+            QVERIFY(raw.open());
+            QSqlQuery query(raw);
+            QVERIFY(query.exec("DELETE FROM items WHERE starred = 1"));
+            QVERIFY(query.exec(QStringLiteral("UPDATE sync_state SET value = '%1' WHERE key = 'lastSyncTime'")
+                                   .arg(QDateTime::currentMSecsSinceEpoch() / 1000 + 3600)));
+            raw.close();
+        }
+        QSqlDatabase::removeDatabase("raw");
+        QCOMPARE(db.missingItemIds(ids.ids), ids.ids);
+
+        QVERIFY(runSync(&sync));
+        QCOMPARE(sync.lastStats().fetched, ids.ids.size());
         QCOMPARE(db.missingItemIds(ids.ids), QStringList());
         for (const QString &id : ids.ids)
             QVERIFY(db.item(id)->starred);

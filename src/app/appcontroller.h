@@ -31,6 +31,10 @@ class AppController : public QObject
     Q_PROPERTY(int refreshInterval READ refreshInterval WRITE setRefreshInterval NOTIFY refreshIntervalChanged)
     // Article lists show the oldest arrival first.
     Q_PROPERTY(bool oldestFirst READ oldestFirst WRITE setOldestFirst NOTIFY oldestFirstChanged)
+    // Show a notification about new articles after background syncs.
+    Q_PROPERTY(bool notifyNewArticles READ notifyNewArticles WRITE setNotifyNewArticles NOTIFY notifyNewArticlesChanged)
+    // How old (by arrival) articles may be to be downloaded; 0 is no limit.
+    Q_PROPERTY(int historyDays READ historyDays WRITE setHistoryDays NOTIFY historyDaysChanged)
     // Days to keep read, unstarred articles after reading; 0 is forever.
     Q_PROPERTY(int readRetention READ readRetention WRITE setReadRetention NOTIFY readRetentionChanged)
 
@@ -53,6 +57,10 @@ public:
     void setRefreshInterval(int minutes);
     bool oldestFirst() const;
     void setOldestFirst(bool oldestFirst);
+    bool notifyNewArticles() const;
+    void setNotifyNewArticles(bool notify);
+    int historyDays() const;
+    void setHistoryDays(int days);
     int readRetention() const;
     void setReadRetention(int days);
 
@@ -73,6 +81,12 @@ public:
     // Text.RichText (links in linkColor), {type: "image", image, link}.
     Q_INVOKABLE QVariantList articleBlocks(const QString &itemId, const QString &linkColor);
 
+    // Unread articles that arrived since the user last had the app open:
+    // {count, newestTitle}.
+    Q_INVOKABLE QVariantMap newArticles();
+    // The user has seen the app; later arrivals count as new.
+    Q_INVOKABLE void markArticlesSeen();
+
 signals:
     void accountChanged();
     void loggingInChanged();
@@ -82,6 +96,8 @@ signals:
     void unreadCountChanged();
     void refreshIntervalChanged();
     void oldestFirstChanged();
+    void notifyNewArticlesChanged();
+    void historyDaysChanged();
     void readRetentionChanged();
     void loginFinished(bool ok, const QString &message);
     // Lists need to be reloaded (after a sync, mark all read or logout).
