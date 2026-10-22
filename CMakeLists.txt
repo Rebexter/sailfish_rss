@@ -4,6 +4,9 @@ project(harbour-sailrss CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# The RPM spec passes its Version here.
+set(APP_VERSION "0.0.0-dev" CACHE STRING "Version shown in the app and sent to the server")
+
 find_package (Qt5 COMPONENTS Core Network Sql Qml Gui Quick LinguistTools REQUIRED)
 
 include(FindPkgConfig)
@@ -29,6 +32,7 @@ add_library(sailrss-core STATIC
 )
 target_include_directories(sailrss-core PUBLIC src)
 target_link_libraries(sailrss-core PUBLIC Qt5::Core Qt5::Network Qt5::Sql)
+target_compile_definitions(sailrss-core PUBLIC APP_VERSION="${APP_VERSION}")
 
 add_executable(harbour-sailrss
     src/app/appcontroller.cpp

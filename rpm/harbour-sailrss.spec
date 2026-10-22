@@ -1,7 +1,7 @@
 Name:       harbour-sailrss
 
 Summary:    FreshRSS client for Sailfish OS
-Version:    0.1.0
+Version:    1.0.0
 Release:    1
 License:    GPL-3.0-or-later
 URL:        https://github.com/Rebexter/sailfish_rss
@@ -29,7 +29,7 @@ using the Google Reader compatible API.
 
 %build
 
-%cmake .
+%cmake . -DAPP_VERSION=%{version}
 
 %make_build
 

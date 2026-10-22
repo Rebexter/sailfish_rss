@@ -111,6 +111,11 @@ Database *AppController::database()
     return &m_database;
 }
 
+QString AppController::version() const
+{
+    return QStringLiteral(APP_VERSION);
+}
+
 bool AppController::loggedIn() const
 {
     return m_loggedIn;

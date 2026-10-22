@@ -9,7 +9,7 @@ namespace GReader {
 
 namespace {
 
-const QByteArray UserAgent = QByteArrayLiteral("SailRSS/0.1");
+const QByteArray UserAgent = QByteArrayLiteral("SailRSS/" APP_VERSION);
 const char TimedOutProperty[] = "sailrssTimedOut";
 
 // Wraps a ResultCallback so it receives the body parsed with `parse`.

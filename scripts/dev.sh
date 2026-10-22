@@ -8,6 +8,7 @@
 #   test-server-stop  stop and delete it
 #   live-test         run the API and sync tests against that test server
 #   check             run the Jolla Store (Harbour) validator on the built RPM
+#   release           build the store package (stripped, debug info apart) and check it
 #   deploy            install the built RPM on the device
 #   undeploy          remove the app from the device
 #   lupdate           refresh translations/*.ts from the QML and C++ sources
@@ -135,6 +136,16 @@ cmd_live_test() {
         SAILRSS_TEST_PASSWORD="$TEST_PASSWORD" bash -c 'tests/tst_greaderlive && tests/tst_synclive'
 }
 cmd_check() { sfdk check -s harbour "$(latest_rpm)"; }
+# With --enable-debug, rpm moves the debug info into separate -debuginfo and
+# -debugsource packages and strips the app; only the main RPM is submitted.
+cmd_release() {
+    BUILD_DIR=$ROOT/build/release-${SFDK_TARGET##*-}
+    mkdir -p "$BUILD_DIR"
+    cd "$BUILD_DIR"
+    sfdk build --enable-debug "$ROOT"
+    sfdk check -s harbour "$(latest_rpm)"
+    echo "Store package: $(latest_rpm)"
+}
 cmd_deploy() {
     in_build_dir
     sfdk deploy --sdk
@@ -151,9 +162,9 @@ cmd_lupdate() {
 cmd_all() { cmd_build && cmd_check && cmd_deploy; }
 
 case ${1:-} in
-    build|test|check|deploy|undeploy|lupdate|all) "cmd_$1" ;;
+    build|test|check|release|deploy|undeploy|lupdate|all) "cmd_$1" ;;
     live-test) cmd_live_test ;;
     test-server) cmd_test_server ;;
     test-server-stop) cmd_test_server_stop ;;
-    *) sed -n '2,20s/^# \{0,1\}//p' "$0"; exit 1 ;;
+    *) sed -n '2,21s/^# \{0,1\}//p' "$0"; exit 1 ;;
 esac

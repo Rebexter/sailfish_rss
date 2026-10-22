@@ -19,6 +19,7 @@
 class AppController : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString version READ version CONSTANT)
     Q_PROPERTY(bool loggedIn READ loggedIn NOTIFY accountChanged)
     Q_PROPERTY(QString serverUrl READ serverUrl NOTIFY accountChanged)
     Q_PROPERTY(QString userName READ userName NOTIFY accountChanged)
@@ -45,6 +46,7 @@ public:
     bool open();
     Database *database();
 
+    QString version() const;
     bool loggedIn() const;
     QString serverUrl() const;
     QString userName() const;

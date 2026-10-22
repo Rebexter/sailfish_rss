@@ -32,6 +32,22 @@ and `SFDK_DEVICE` environment variables, and the `sfdk` path with `SFDK`.
 After changing user-visible strings, run `scripts/dev.sh lupdate` to refresh
 the translation files in `translations/`.
 
+### Store packages
+
+```sh
+scripts/dev.sh release                                     # aarch64
+SFDK_TARGET=SailfishOS-5.1.0.11-armv7hl scripts/dev.sh release
+```
+
+This builds into `build/release-<arch>/` with the debug information moved to
+separate `-debuginfo` and `-debugsource` packages, so the app itself is
+stripped, and runs the Harbour validator. Submit only the main
+`harbour-sailrss-<version>-1.<arch>.rpm`. The version is set in
+`rpm/harbour-sailrss.spec`.
+
+The launcher icon is drawn by `scripts/make-icons.py` (needs Pillow), which
+writes all four sizes in `icons/`.
+
 ## Testing
 
 `scripts/dev.sh build` runs the unit tests in `tests/` under emulation;

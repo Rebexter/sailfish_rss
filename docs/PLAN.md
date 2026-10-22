@@ -126,10 +126,16 @@ Each phase ends with something that can be checked on the phone.
 - Share link from the article page (`Sailfish.Share`), translations.
 
 ### 5. Release
-- Stripped release build, real icon, store description and screenshots.
+- App icon ✅: Sailfish launcher shape (sharp top-right corner), sea-blue
+  gradient, white RSS symbol; drawn by `scripts/make-icons.py`.
+- Release build ✅: `scripts/dev.sh release` builds a stripped package with
+  the debug info in separate packages and validates it, for aarch64 and
+  armv7hl. Version 1.0.0, set in the spec and shown under Settings → About,
+  which also states the license, the source code and the AI assistance.
+- Store description and screenshots.
 - Check that the app reads no `SAILRSS_*` environment variables (only the
   live tests do), and that no token is stored in `settings.ini`.
-- Harbour validator clean, then submit to the Jolla Store.
+- Submit to the Jolla Store (needs the developer's Jolla account).
 
 ### Later
 - Add and remove subscriptions in the app.

@@ -141,6 +141,35 @@ Page {
                 color: Theme.secondaryHighlightColor
                 text: qsTr("Logging out removes the articles stored on this device; your feeds stay on the server. Changes that were not sent yet, for example while offline, are lost.")
             }
+
+            SectionHeader {
+                text: qsTr("About")
+            }
+
+            DetailItem {
+                label: qsTr("Version")
+                value: app.version
+            }
+
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * x
+                wrapMode: Text.Wrap
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.secondaryHighlightColor
+                text: qsTr("SailRSS is a FreshRSS client for Sailfish OS, free software under the GNU GPL version 3 or later. It was developed with AI assistance (Claude by Anthropic).")
+            }
+
+            Item {
+                width: 1
+                height: Theme.paddingMedium
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Source code")
+                onClicked: Qt.openUrlExternally("https://github.com/Rebexter/sailfish_rss")
+            }
         }
 
         VerticalScrollDecorator { }

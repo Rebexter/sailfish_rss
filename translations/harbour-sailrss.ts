@@ -355,6 +355,22 @@
         <source>No limit</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SailRSS is a FreshRSS client for Sailfish OS, free software under the GNU GPL version 3 or later. It was developed with AI assistance (Claude by Anthropic).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source code</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>StreamListModel</name>
